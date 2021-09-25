@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Setup &#8212; MultiGeiger V1.17.0-dev documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Setup (LoRA)" href="setup_lora.html" />
+    <link rel="prev" title="Assembly" href="assembly.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="setup">
+<h1>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h1>
+<p>Download and unpack the latest release from GitHub (
+<a class="reference external" href="https://github.com/ecocurious/MultiGeiger/releases">https://github.com/ecocurious/MultiGeiger/releases</a> ) as source code
+(zip) or source code (tar.gz). In the new directory, open the directory
+<em>multigeiger</em> and load the file <em>multigeiger.ino</em> with the Arduino IDE.</p>
+<p>The board supports two different Heltec devices, different counting
+tubes and optionally a sensor for ambient temperature, air pressure, and
+humidity (BME280 or BME680). The software can send data via network to
+different services.</p>
+<ul class="simple">
+<li><p><strong>Heltec WiFi Kit 32</strong> This MCU has WiFi, a large display and plugged
+into the longer female connectors on the board.</p></li>
+<li><p><strong>Heltec Wireless Stick</strong> This MCU has a very small display, and
+provides LoRa beside WiFi. It must be plugged into the shorter female
+headers on the board.</p></li>
+</ul>
+<p>To select the Heltec boards in the Arduino IDE, the following steps must
+be taken:</p>
+<ul class="simple">
+<li><p>Add the file: <a class="reference external" href="https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json">https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json</a> in Preferences-&gt;Additional Boards Manager URLs.</p></li>
+<li><p>Then, the ESP32 boards (name “esp32 by Espressif Systems”) can be installed under Tools-&gt;Board-&gt;Boards Manager. Choose the correct Heltec board under Tools-&gt;Board.</p></li>
+<li><p>Select the <strong>Heltec wireless Stick</strong> for <strong>both</strong> boards.</p></li>
+<li><p>If you use arduino-esp32 &gt;= 1.0.5, you might need to apply a patch to get back the “partition scheme” menu
+needed in the next step, see the <code class="docutils literal notranslate"><span class="pre">misc/arduino-esp32/paritition-menu-*.*</span></code> files in our git repo.</p></li>
+<li><p>Select under Tools <strong>Flash size: “4MB(32Mb)”</strong> and <strong>Partition Scheme: “Minimal SPIFFS (Large APPS with OTA)”</strong>. The software recognizes automatically which board is equipped.</p></li>
+</ul>
+<p>Various software settings can be made via the following files (see
+comments inside):</p>
+<ul class="simple">
+<li><p><strong>./multigeiger/userdefines.h</strong> (always necessary, an example is
+provided in userdefines-example.h)</p></li>
+<li><p><strong>./platformio.ini</strong> (only for platformio, an example is provided in
+platformio-example.ini)</p></li>
+</ul>
+<p>All external libraries are required, which are listed in the file</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">platformio</span><span class="o">-</span><span class="n">example</span><span class="o">.</span><span class="n">ini</span>
+</pre></div>
+</div>
+<p>under the section</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lib</span><span class="o">-</span><span class="n">deps</span> <span class="o">=</span>
+</pre></div>
+</div>
+<p>Please install the latest version via platform.io / Libraries.</p>
+<p><strong>Caution:</strong> If the Arduino IDE is used, please check that in the file project_config/lmic_project_config.h (in the top level in this library) the correct configurations are set. The file must look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">project</span><span class="o">-</span><span class="n">specific</span> <span class="n">definitions</span>
+<span class="c1">#define CFG_eu868 1</span>
+<span class="o">//</span><span class="c1">#define CFG_us915 1</span>
+<span class="o">//</span><span class="c1">#define CFG_au921 1</span>
+<span class="o">//</span><span class="c1">#define CFG_as923 1</span>
+<span class="o">//</span> <span class="c1">#define LMIC_COUNTRY_CODE LMIC_COUNTRY_CODE_JP /* for as923-JP */</span>
+<span class="o">//</span><span class="c1">#define CFG_in866 1</span>
+<span class="c1">#define CFG_sx1276_radio 1</span>
+<span class="o">//</span><span class="c1">#define LMIC_USE_INTERRUPTS</span>
+</pre></div>
+</div>
+<p>The specified versions of the libraries are the minimum requirements. We
+always test with the latest versions too, so please always install and
+use the latest versions. If the compiler reminds other libraries, please
+install them in the Arduino IDE via <em>Sketch -&gt; Include Library -&gt; Manage
+Libraries ..</em>.</p>
+<section id="procedure-after-startup">
+<h2>Procedure after startup<a class="headerlink" href="#procedure-after-startup" title="Permalink to this headline">¶</a></h2>
+<p>The device establishes its own WiFi access point (AP). The SSID of the AP is <strong>ESP32-xxxxxx</strong>, where the xxx are the chip ID (or MAC address) of the WiFi chip (example: <strong>ESP32-51564452</strong>). <strong>Please write down this number, it will be needed later.</strong>
+This access point remains active for 30 sec. After that the device tries to connect to the (previously) defined WiFi netwword.
+This connection attempt also takes 30sec. If no connection could be established, the own AP is created again and the process starts again and again.</p>
+</section>
+<section id="configuring-the-device-via-wifi">
+<h2>Configuring the device via WiFi<a class="headerlink" href="#configuring-the-device-via-wifi" title="Permalink to this headline">¶</a></h2>
+<p>After the WiFi AP of the device appears on your cell phone or computer, connect to it. The connection asks for a password, it is <strong>ESP32Geiger</strong>.
+The start page of the device opens usually <strong>automatically</strong>.
+If the start page does not appear, you have to call the address <strong>192.168.4.1</strong> with a browser. The start page appears, where you can’t miss the link to the <strong>configure page</strong> , click on it and you enter the settings page.</p>
+<p>The settings page has the following lines:</p>
+<ul class="simple">
+<li><p>Geiger accesspoint SSID
+This is the SSID of the built-in AP and can be changed. If the sensor was already registered with this number at sensor.community, a new registration is mandatory.</p></li>
+<li><p>Geiger accesspoint password
+This is the password for the built-in AP. It <strong>MUST</strong> be changed the first time. If desired, the default password <strong>ESP32Geiger</strong> can be used again. The field must not be left blank. Save the password to your favourite password manager.</p></li>
+<li><p>WiFi client SSID
+Here you have to enter the SSID of the WLAN you want to connect for network/internet access.</p></li>
+<li><p>WiFi client password And here the corresponding password.</p></li>
+</ul>
+<p>For more security, it is recommended to use a separate WiFi network (e.g. guest network) to ensure an isolated communication from the normal network.</p>
+<p>If everything is entered, press <strong>Apply</strong> and the data are stored in the internal EEPROM. Leave this page via <strong>Cancel</strong>, because only in this way the program closes the Config-Mode and connects to the local WiFi network.
+If there is no <strong>Cancel</strong> Button, go back to the WiFi settings
+of the device and type in the normal home network parameters again.</p>
+<p><strong>CAUTION</strong>. <strong>When updating to version 1.13, the WiFi settings must be
+re-entered</strong>. In future versions this step shall become obsolete.</p>
+<p>Furthermore, the following options can be defined on the settings page:</p>
+<ul class="simple">
+<li><p>Start melody, speaker tick, LED tick and display on/off.</p></li>
+<li><p>Send data to sensor.community or/and to madavi.de</p></li>
+<li><p>If LoRa hardware is available: the LoRa parameters (DEVEUI, APPEUI
+and APPKEY) can be entered here.</p></li>
+</ul>
+<p>The firmware on the MultiGeiger can be updated with the link <strong>Firmware update</strong> at the End of the settings page. Download the .bin file, select it via <strong>Browse…</strong> and click <strong>Update</strong>. It will take roughly 30sec for uploading and flashing the firmware. If you see <strong>Update Success! Rebooting…</strong>, the MultiGeiger will reboot and the new firmware will be active.</p>
+<p>If <strong>Update error: …</strong> appears, the update did not work. The previous firmware is still active.</p>
+<p>The settings page can be called up from your own WiFi at any time. To do this, just enter in the address bar of the browser: <a class="reference external" href="http://esp32-xxxxxxx">http://esp32-xxxxxxx</a> (xxxxx is the chip ID – see above).
+If it does not work with this hostname, use the IP address of the Geiger counter instead. The Ip address can be found in the devices list in your router.
+If successful, the login page appears.
+Enter <strong>admin</strong> as username and the chosen password (see above). Now you will see the settings page as described.</p>
+</section>
+<section id="server-for-measured-data">
+<h2>Server for measured data<a class="headerlink" href="#server-for-measured-data" title="Permalink to this headline">¶</a></h2>
+<p>The pulses are counted for one measuring cycle at a time, from which the “counts per minute” (cpm) are calculated. After each cycle the data is sent to the servers at <em>sensor.community</em> and at <em>madavi.de</em>.</p>
+<p>At <em>sensor.community</em> the data is stored and made available for retrieval the next day as CSV file.
+This file can be found at <a class="reference external" href="http://archive.sensor.community/DATE/DATE_radiation_si22g_sensor_SID.csv">http://archive.sensor.community/DATE/DATE_radiation_si22g_sensor_SID.csv</a>), where DATE = date in format YYYY-MM-DD (both times equal) and SID is the sensor number of the sensor (<strong>not</strong> the ChipID). For other sensors, replace the counting tube name <strong>si22g</strong> with the corresponding name (e.g.: sbm-20 or sbm-19).</p>
+<p>At <em>madavi</em> the data is stored in a RRD database and can be accessed directly as a graph via this link: <a class="reference external" href="https://www.madavi.de/sensor/graph.php?sensor=esp32-CHIPID-si22g">https://www.madavi.de/sensor/graph.php?sensor=esp32-CHIPID-si22g</a>.
+Here CHIPID is the ChipId (the digits of the SSID of the internal access point).</p>
+<p>During the transmission of the data to the servers, the name of the server is briefly shown in the status line (bottom line) of the display.</p>
+</section>
+<section id="login-to-sensor-community">
+<h2>Login to sensor.community<a class="headerlink" href="#login-to-sensor-community" title="Permalink to this headline">¶</a></h2>
+<p>In order to send the measuered data to sensor.community, it is mandatory to have a valid account and the sensor is registered. Both can be done at <a class="reference external" href="https://devices.sensor.community">https://devices.sensor.community</a>. Create an account if you do not have one via the <em>Register</em> button and log in. To register a new sensor click <em>Register new sensor</em>. Fill in the form:</p>
+<ul class="simple">
+<li><p>Sensor
+ID: Enter the number (only the numbers) of the SSID of the sensor (e.g. for the sensor ESP-51564452 enter 51564452).</p></li>
+<li><p>Sensor Board: Select <em>esp32</em> (by the small arrows on the right)</p></li>
+<li><p>Basic information:
+Enter the address and the country. The internal name of the sensor can be assigned arbitrarily, but must be entered. Please check <strong>Indoor sensor</strong> as long as the sensor operates not outdoor.</p></li>
+<li><p>Additional information:
+Can be left blank, but its nice to provide further information.</p></li>
+<li><p>Hardware configuration:
+Select the sensor type <strong>Radiation Si22G</strong> (or accordingly). The value for the second sensor can remain DHT22, as it is irrelevant in this context.</p></li>
+<li><p>Position:
+Please enter the coordinates as accurate as possible. You can use the right button to calculate the coordinates. They are needed to show your sensor on the map.</p></li>
+</ul>
+<p>Finish the settings by clicking <em>Save settings</em>. At the overview page for this sensor go to <em>Data</em>. Here you see amongst others the ID of the sensor. Please remember: the ID mandatory for the queries at
+sensor.community or multigeiger.citysensor.de.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">MultiGeiger</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assembly.html">Assembly</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#procedure-after-startup">Procedure after startup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuring-the-device-via-wifi">Configuring the device via WiFi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#server-for-measured-data">Server for measured data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#login-to-sensor-community">Login to sensor.community</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="setup_lora.html">Setup (LoRA)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html#license">License</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="assembly.html" title="previous chapter">Assembly</a></li>
+      <li>Next: <a href="setup_lora.html" title="next chapter">Setup (LoRA)</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020-2021, see AUTHORS.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/setup.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

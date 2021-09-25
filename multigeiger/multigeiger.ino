@@ -34,7 +34,7 @@
 
 // DIP switches
 static Switches switches;
-
+float accumulated_count_rate = 0.0, accumulated_dose_rate = 0.0;
 
 void setup() {
   bool isLoraBoard = init_hwtest();
@@ -114,12 +114,6 @@ void read_THP(unsigned long current_ms,
   }
 }
 
-void local_alarmsequence(void) {
-  // call all alarm action options
-  // currently local beep every display refresh
-  alarm();
-}
-
 void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigned long gm_count_timestamp, unsigned long current_hv_pulses,
                  bool have_thp, float temperature, float humidity, float pressure, int wifi_status) {
   struct GM_State {
@@ -133,14 +127,16 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
   const byte HEARTBEAT = 0;
   const byte MEASUREMENT = 1;
   const byte ONE_MINUTE = 2;
+  const byte TELEGRAM_DATA = 3;
 
-  const int savedstates_count = 3;
+  const int savedstates_count = 4;
 
   static GM_State saved_state[savedstates_count];
   long event_interval[savedstates_count] = {
     HEARTBEAT_INTERVAL * 1000,  // Basic heartbeat interval
     MEASUREMENT_INTERVAL * 1000,  // Send measurements to server interval
-    60 * 1000  // 60 sec
+    60 * 1000,  // 60 sec
+    SEND_DATA_TO_MESSENGER_EVERY * 1000  // Send to Telegram messenger interval
   };
 
   // millis(), counts or hv_pulses overflow?
@@ -153,7 +149,6 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
 
   static unsigned int accumulated_GMC_counts = 0;
   static unsigned long accumulated_time = 0;
-  static float accumulated_Count_Rate = 0.0, accumulated_Dose_Rate = 0.0;
 
   // Startup
   if ((gm_count_timestamp == 0) && (saved_state[HEARTBEAT].last_count_timestamp == 0)) {
@@ -183,29 +178,39 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
     float dose_rate = count_rate * GMC_factor_uSvph;
 
     // calculate the count rate and dose rate over the complete time from start
-    accumulated_Count_Rate = (accumulated_time != 0) ? (float)accumulated_GMC_counts * 1000.0 / (float)accumulated_time : 0.0;
-    accumulated_Dose_Rate = accumulated_Count_Rate * GMC_factor_uSvph;
+    accumulated_count_rate = (accumulated_time != 0) ? (float)accumulated_GMC_counts * 1000.0 / (float)accumulated_time : 0.0;
+    accumulated_dose_rate = accumulated_count_rate * GMC_factor_uSvph;
 
     // Serial logging
     if (Serial_Print_Mode == Serial_Logging) {
       log_data(counts, dt, count_rate, dose_rate, hv_pulses,
-               accumulated_GMC_counts, accumulated_time, accumulated_Count_Rate, accumulated_Dose_Rate,
+               accumulated_GMC_counts, accumulated_time, accumulated_count_rate, accumulated_dose_rate,
                temperature, humidity, pressure);
     }
 
     // Update data on display and notify via BLE
-    display_GMC((unsigned int)(accumulated_time / 1000), (int)(accumulated_Dose_Rate * 1000), (int)(count_rate * 60),
+    display_GMC((unsigned int)(accumulated_time / 1000), (int)(accumulated_dose_rate * 1000), (int)(count_rate * 60),
                 (showDisplay && switches.display_on));
     update_bledata((unsigned int)(count_rate * 60));
 
-    // Check for local alarm
-    if (soundLocalAlarm && GMC_factor_uSvph > 0) {
-      if (accumulated_Dose_Rate > localAlarmThreshold) {
-        log(WARNING, "Local alarm: Accumulated dose of %.3f µSv/h above threshold at %.3f µSv/h", accumulated_Dose_Rate, localAlarmThreshold);
-        local_alarmsequence();
-      } else if (dose_rate > (accumulated_Dose_Rate * localAlarmFactor)) {
-        log(WARNING, "Local alarm: Current dose of %.3f > %d x accumulated dose of %.3f µSv/h", dose_rate, localAlarmFactor, accumulated_Dose_Rate);
-        local_alarmsequence();
+    // Sound local alarm?
+    if ((soundLocalAlarm || telegramSendLocalAlarm) && GMC_factor_uSvph > 0) {
+      bool isAlarm = false;
+      if (accumulated_dose_rate > localAlarmThreshold) {
+        log(WARNING, "Local alarm: Accumulated dose of %.3f µSv/h above threshold at %.3f µSv/h", accumulated_dose_rate, localAlarmThreshold);
+        isAlarm = true;
+      }
+      if (dose_rate > (accumulated_dose_rate * localAlarmFactor)) {
+        log(WARNING, "Local alarm: Current dose of %.3f > %d x accumulated dose of %.3f µSv/h", dose_rate, localAlarmFactor, accumulated_dose_rate);
+        isAlarm = true;
+      }
+      if (isAlarm) {
+        if (soundLocalAlarm)
+          alarm();
+        if (telegramSendLocalAlarm)
+          transmit_userinfo(tubes[TUBE_TYPE].type, tubes[TUBE_TYPE].nbr, tubes[TUBE_TYPE].cps_to_uSvph,
+                            (unsigned int)(count_rate * 60), (unsigned int)(accumulated_count_rate * 60), accumulated_dose_rate,
+                            have_thp, temperature, humidity, pressure, wifi_status, true);
       }
     }
     saved_state[HEARTBEAT].timestamp = current_ms;
@@ -235,6 +240,11 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
         if (Serial_Print_Mode == Serial_One_Minute_Log)
           log_data_one_minute((current_ms / 1000), current_cpm, counts);
         break;
+      case TELEGRAM_DATA:
+        log(DEBUG, "Sending data to Telegram messenger");
+        transmit_userinfo(tubes[TUBE_TYPE].type, tubes[TUBE_TYPE].nbr, tubes[TUBE_TYPE].cps_to_uSvph,
+              current_cpm, accumulated_count_rate, accumulated_dose_rate,
+              have_thp, temperature, humidity, pressure, wifi_status, false);
       default:
         break;
       }

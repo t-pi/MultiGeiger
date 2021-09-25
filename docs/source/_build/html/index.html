@@ -1,0 +1,265 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>MultiGeiger Documentation &#8212; MultiGeiger V1.17.0-dev documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="About" href="about.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="multigeiger-documentation">
+<h1>MultiGeiger Documentation<a class="headerlink" href="#multigeiger-documentation" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<section id="what-is-multigeiger">
+<h2>What is MultiGeiger?<a class="headerlink" href="#what-is-multigeiger" title="Permalink to this headline">¶</a></h2>
+<p>The MultiGeiger is a radioactivity measurement device.</p>
+<section id="main-features">
+<h3>Main features<a class="headerlink" href="#main-features" title="Permalink to this headline">¶</a></h3>
+<p><strong>multiple use cases supported</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>fixed location stations (data transfer via network)</p></li>
+<li><p>mobile operations (using the OLED display and speaker)</p></li>
+<li><p>(more are planned)</p></li>
+</ul>
+</div></blockquote>
+<p><strong>multiple 400V Geiger-Mueller tubes supported</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>big, sensitive tubes, like the Si21g or Si22g (for measurement stations)</p></li>
+<li><p>smaller, less sensitive tubes, like the SBM21 (good for finding hot spots)</p></li>
+</ul>
+</div></blockquote>
+<p><strong>Hardware</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>low parts count, simple to assemble</p></li>
+<li><p>inexpensive, but still good parts</p></li>
+<li><p>using ESP32, a modern and fast 32bit micro controller</p></li>
+<li><p>with WiFi (WPA2) or with WiFi + LoRA</p></li>
+<li><p>with OLED display</p></li>
+</ul>
+</div></blockquote>
+<p><strong>Firmware</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>implemented in C</p></li>
+<li><p>using the popular arduino API</p></li>
+<li><p>over-the-air firmware updates</p></li>
+</ul>
+</div></blockquote>
+<p><strong>Network and Community</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>this is an Ecocurious citizen science project</p></li>
+<li><p>web-based geo map for publishing measurements</p></li>
+<li><p>web-based archive of historic radiation data</p></li>
+</ul>
+</div></blockquote>
+<p><strong>Free and Open</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>GPL v3 licensed</p></li>
+<li><p>open development and issue tracking on GitHub</p></li>
+</ul>
+</div></blockquote>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assembly.html">Assembly</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="assembly.html#ergebnis">Ergebnis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="assembly.html#bauteile">Bauteile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="assembly.html#lotarbeiten">Lötarbeiten</a></li>
+<li class="toctree-l2"><a class="reference internal" href="assembly.html#gehause">Gehäuse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="assembly.html#inbetriebnahme">Inbetriebnahme</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#procedure-after-startup">Procedure after startup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#configuring-the-device-via-wifi">Configuring the device via WiFi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#server-for-measured-data">Server for measured data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#login-to-sensor-community">Login to sensor.community</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="setup_lora.html">Setup (LoRA)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="setup_lora.html#creating-a-ttn-device">Creating a TTN device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup_lora.html#modifying-the-lora-parameters">Modifying the LoRa parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup_lora.html#logging-data-into-sensor-community-formerly-luftdaten-info">Logging data into sensor.community (formerly luftdaten.info)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup_lora.html#http-integration">HTTP integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup_lora.html#ttn-payload-example">TTN payload (example)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#oled-display">OLED display</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#esp32-buttons">ESP32 buttons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#dip-switches">DIP Switches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#ble-bluetooth-low-energy">BLE - Bluetooth® Low Energy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#requirements-for-the-deployment-place">Requirements for the deployment place</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#choosing-a-deployment-place">Choosing a deployment place</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#examples">Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#more-information">More Information</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#general">General</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="resources.html#hardware-parts">Hardware / Parts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resources.html#software">Software</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-17-0-dev-2021-xx-xx">V1.17.0-dev 2021-xx-xx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-16-0-2021-08-15">V1.16.0 2021-08-15</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-15-1-2021-05-13">V1.15.1 2021-05-13</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-15-0-2021-03-21">V1.15.0 2021-03-21</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-14-0-2020-05-16">V1.14.0 2020-05-16</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-13-0-2020-04-14">V1.13.0 2020-04-14</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-12-0-2020-01-18">V1.12.0 2020-01-18</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-11-1-2019-12-16-rxf">V1.11.1 2019-12-16 rxf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-11-0-2019-12-16-rxf">V1.11.0 2019-12-16 rxf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-10-2019-12-13">V1.10 2019-12-13</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-9-2019-11-12">V1.9 2019-11-12</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-8-2019-11-04">V1.8 2019-11-04</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-7-2019-10-21">V1.7 2019-10-21</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-61-2019-09-30">V1.61 2019-09-30</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-6-2019-09-13">V1.6 2019-09-13</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-5-2019-09-11">V1.5 2019-09-11</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-4-2019-09-03">V1.4 2019-09-03</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-3-2019-09-03">V1.3 2019-09-03</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-2-2019-09-02">V1.2 2019-09-02</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-1-2019-09-01">V1.1 2019-09-01</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v1-0-2019-08-19-rxf">V1.0 2019-08-19 rxf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v0-3-2019-05-12-jb">V0.3 2019-05-12 jb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v0-2-2019-04-26-jb">V0.2 2019-04-26 jb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#v0-1-2019-03-25-jb">V0.1 2019-03-25 jb</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="development.html#contributions">Contributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#building-a-development-environment">Building a development environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#automatic-code-formatter">Automatic Code Formatter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#flashing-devices-creating-binaries">Flashing devices / creating binaries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#creating-a-new-release">Creating a new release</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html#license">License</a></li>
+</ul>
+</div>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">MultiGeiger</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assembly.html">Assembly</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup_lora.html">Setup (LoRA)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html#license">License</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="about.html" title="next chapter">About</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020-2021, see AUTHORS.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

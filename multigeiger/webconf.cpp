@@ -40,6 +40,13 @@ static bool isLoraBoard;
 float localAlarmThreshold = LOCAL_ALARM_THRESHOLD;
 int localAlarmFactor = (int)LOCAL_ALARM_FACTOR;
 
+long sendDataToMessengerEvery = (long)SEND_DATA_TO_MESSENGER_EVERY;
+bool sendLocalAlarmToMessenger = SEND_LOCAL_ALARM_TO_MESSENGER;
+char telegramBotToken[50] = "";  // "XXXXXXXXXX:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+char telegramChatId[12] = "";  // "1234567890"
+
+char sendLocalAlarmToMessenger_c[CHECKBOX_LEN];
+
 iotwebconf::ParameterGroup grpMisc = iotwebconf::ParameterGroup("misc", "Misc. Settings");
 iotwebconf::CheckboxParameter startSoundParam = iotwebconf::CheckboxParameter("Start sound", "startSound", playSound_c, CHECKBOX_LEN, playSound);
 iotwebconf::CheckboxParameter speakerTickParam = iotwebconf::CheckboxParameter("Speaker tick", "speakerTick", speakerTick_c, CHECKBOX_LEN, speakerTick);
@@ -70,6 +77,17 @@ iotwebconf::IntTParameter<int16_t> localAlarmFactorParam =
   defaultValue(localAlarmFactor).
   min(2).max(100).
   step(1).placeholder("2..100").build();
+
+iotwebconf::ParameterGroup grpMessenger = iotwebconf::ParameterGroup("messenger", "Messenger Settings");
+iotwebconf::CheckboxParameter sendLocalAlarmToMessengerParam = iotwebconf::CheckboxParameter("Send local alarm via Messenger", "sendLocalAlarmToMessenger", sendLocalAlarmToMessenger_c, CHECKBOX_LEN, sendLocalAlarmToMessenger);
+iotwebconf::IntTParameter<int32_t> sendDataToMessengerEveryParam =
+  iotwebconf::Builder<iotwebconf::IntTParameter<int32_t>>("sendDataToMessengerEvery").
+  label("Send data via Messenger every n sec\n(0=never,3600=1/h,86400=1/d,604800=1/week)").
+  defaultValue(sendDataToMessengerEvery).
+  min(0).max(31536000).
+  step(1).placeholder("0..31536000").build();
+iotwebconf::PasswordParameter telegramBotTokenParam = iotwebconf::PasswordParameter("Telegram Bot Token (Reboot required!)", "telegramBotToken", telegramBotToken, 50);
+iotwebconf::PasswordParameter telegramChatIdParam = iotwebconf::PasswordParameter("Telegram Chat ID", "telegramChatId", telegramChatId, 12);
 
 // This only needs to be changed if the layout of the configuration is changed.
 // Appending new variables does not require a new version number here.
@@ -205,6 +223,11 @@ void setup_webconf(bool loraHardware) {
   grpAlarm.addItem(&localAlarmThresholdParam);
   grpAlarm.addItem(&localAlarmFactorParam);
   iotWebConf.addParameterGroup(&grpAlarm);
+  grpMessenger.addItem(&sendDataToMessengerEveryParam);
+  grpMessenger.addItem(&sendLocalAlarmToMessengerParam);
+  grpMessenger.addItem(&telegramBotTokenParam);
+  grpMessenger.addItem(&telegramChatIdParam);
+  iotWebConf.addParameterGroup(&grpMessenger);
 
   // if we don't have LoRa hardware, do not send to LoRa
   if (!isLoraBoard)

@@ -1,0 +1,284 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Usage &#8212; MultiGeiger V1.17.0-dev documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Deployment" href="deployment.html" />
+    <link rel="prev" title="Setup (LoRA)" href="setup_lora.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="usage">
+<span id="id1"></span><h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
+<section id="oled-display">
+<h2>OLED display<a class="headerlink" href="#oled-display" title="Permalink to this headline">¶</a></h2>
+<section id="top-line">
+<h3>Top line<a class="headerlink" href="#top-line" title="Permalink to this headline">¶</a></h3>
+<p>Left: Time since power-on (not shown on small displays).</p>
+<p>Right: Overall average radiation since power-on.</p>
+</section>
+<section id="middle-area">
+<h3>Middle area<a class="headerlink" href="#middle-area" title="Permalink to this headline">¶</a></h3>
+<p>Current CPM (counts per minute) displayed using a rather big font.</p>
+</section>
+<section id="bottom-line">
+<h3>Bottom line<a class="headerlink" href="#bottom-line" title="Permalink to this headline">¶</a></h3>
+<p>This is a status display with 8 positions, numbered 0..7:</p>
+<p>Rules of thumb:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">.</span></code> usually means “off” or “unused”.</p></li>
+<li><p>if you see some <em>number</em> (<code class="docutils literal notranslate"><span class="pre">0</span></code> .. <code class="docutils literal notranslate"><span class="pre">7</span></code>) within the status display line, something went wrong.</p></li>
+</ul>
+<p>Positions:</p>
+<ul class="simple">
+<li><p>0: WiFi</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">A</span></code>: AccessPoint active</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">w</span></code>: WiFi client trying to connect</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">W</span></code>: WiFi client connected</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">0</span></code>: some error happened</p></li>
+</ul>
+</li>
+<li><p>1: sensor.community transmission</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">.</span></code>: off (not configured, not enabled)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">?</span></code>: init (enabled, before 1st transmission)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">S</span></code>: sending</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">s</span></code>: idle (shown after successful sending)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">1</span></code>: sending failed (shown after trying to send)</p></li>
+</ul>
+</li>
+<li><p>2: madavi transmission</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">.</span></code>: off (not configured, not enabled)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">?</span></code>: init (enabled, before 1st transmission)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">M</span></code>: sending</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">m</span></code>: idle (shown after successful sending)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">2</span></code>: sending failed (shown after trying to send)</p></li>
+</ul>
+</li>
+<li><p>3: TTN (“The Things Network”)</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">.</span></code>: off (not configured, not enabled, no LoRa hardware)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">?</span></code>: init (enabled, before 1st transmission)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">T</span></code>: sending</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">t</span></code>: idle (shown after successful sending)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">3</span></code>: sending failed (shown after trying to send)</p></li>
+</ul>
+</li>
+<li><p>4: BLE (Bluetooth® Low Energy)</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">.</span></code>: off (not enabled)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">?</span></code>: init (enabled, before setup of BLE service)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">B</span></code>: connected and sending notifications, if requested by connected device</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">b</span></code>: connectable (advertising and ready to connect)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">4</span></code>: BLE error</p></li>
+</ul>
+</li>
+<li><p>5: unused</p></li>
+<li><p>6: unused</p></li>
+<li><p>7: High-Voltage Capacitor charging</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">H</span></code>: OK</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">7</span></code>: failure to charge HV capacitor</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="esp32-buttons">
+<h2>ESP32 buttons<a class="headerlink" href="#esp32-buttons" title="Permalink to this headline">¶</a></h2>
+<p>The MultiGeiger ESP32 microcontroller board has 2 buttons:</p>
+<ul class="simple">
+<li><p>RST: reset (restarts device)</p></li>
+<li><p>PRG: program (press and hold PRG, press RST momentarily, upload firmware)</p></li>
+</ul>
+<p>Often, using PRG is not needed for flashing firmware, because it “just works” when using the right tools.</p>
+</section>
+<section id="dip-switches">
+<h2>DIP Switches<a class="headerlink" href="#dip-switches" title="Permalink to this headline">¶</a></h2>
+<p>Optionally, the MultiGeiger can be equipped with a 4-contact DIP switch under the ESP32 microcontroller board.</p>
+<p>The firmware makes use of these 4 switches as defined in the <code class="docutils literal notranslate"><span class="pre">Switches</span></code> data type in <code class="docutils literal notranslate"><span class="pre">switches.h</span></code>:</p>
+<ul class="simple">
+<li><p>SW0: Speaker on</p></li>
+<li><p>SW1: Display on</p></li>
+<li><p>SW2: LED on</p></li>
+<li><p>SW3: BLE on</p></li>
+</ul>
+</section>
+<section id="ble-bluetooth-low-energy">
+<h2>BLE - Bluetooth® Low Energy<a class="headerlink" href="#ble-bluetooth-low-energy" title="Permalink to this headline">¶</a></h2>
+<section id="ble-heart-rate-service">
+<h3>BLE Heart Rate Service<a class="headerlink" href="#ble-heart-rate-service" title="Permalink to this headline">¶</a></h3>
+<p>The MultiGeiger provides a Bluetooth® Low Energy (BLE) service to allow the collection of the Geiger-Mueller count rate via a <a class="reference external" href="https://www.bluetooth.com/specifications/gatt/services/">GATT Heart Rate Service</a> (Service UUID 0x180D). The following characteristics are used:</p>
+<ul class="simple">
+<li><p>0x2A37 (‘Heart Rate Measurement Characteristic’):</p>
+<ul>
+<li><p>The first byte is a collection of status flags, according to the service’s standard</p></li>
+<li><p>‘Heart Rate Measurement’ as 16 bit value (little endian), corresponds to Geiger-Mueller counts per minute (CPM)</p></li>
+<li><p>‘Energy Expenditure’ as 16 bit value (little endian), represents a rolling packet counter</p></li>
+</ul>
+</li>
+<li><p>0x2A38 (‘Heart Rate Sensor Position Characteristic’)</p>
+<ul>
+<li><p>‘Sensor Position’ as 8 bit value, corresponds to TUBE-TYPE, allowing the conversion of CPM to radiation rate</p></li>
+</ul>
+</li>
+<li><p>0x2A39 (‘Heart Rate Control Point Characteristic’)</p>
+<ul>
+<li><p>Write characteristic, required by service’s standard to reset Energy Expenditure to 0. Writing 0x01 resets the rolling packet counter to 0.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="testing-ble">
+<h3>Testing BLE<a class="headerlink" href="#testing-ble" title="Permalink to this headline">¶</a></h3>
+<p>Any decent Bluetooth® scanning app should be able to connect to the device and show the notification values.</p>
+<p>The <a class="reference external" href="https://github.com/t-pi/multigeiger_companion">MultiGeiger companion app</a> was specifically made for the MultiGeiger.</p>
+<p>There are also some generic apps:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.nordicsemi.com/Software-and-Tools/Development-Tools/nRF-Connect-for-mobile">nordic® nRF Connect app</a></p></li>
+<li><p><a class="reference external" href="https://f-droid.org/de/packages/st.wow.git.hrm/">HRM heart rate monitor app</a></p></li>
+</ul>
+<p>Any other heart monitor app / device should be able to connect to the MultiGeiger, too.</p>
+<ul class="simple">
+<li><p>Figure 1: Connect to the MultiGeiger with the name ‘ESP32-&lt;id&gt;’, where &lt;id&gt; should be the same ID (7 to 8 digits) as with the access point to set the device up initially.</p></li>
+<li><p>Figure 2: Find the correct service (UUID 0x180D) and, if needed, load / open characteristics.</p></li>
+<li><p>Figure 3: Find the Heart Rate Measurement Characteristic (UUID 0x2A37) and click on the icon to start notifications.</p></li>
+</ul>
+<p>While testing, please keep in mind that an update packet is sent only every ~10s (along with a display refresh, if enabled). If a WiFi transmission is blocking display and BLE updates, the interval may be even longer. So it might take a while until a reaction with actual data can be seen in the app.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><em>Fig. 1</em></p>
+<p><a class="reference internal" href="_images/ble_check01.jpg"><img alt="ble1" class="align-top" src="_images/ble_check01.jpg" style="width: 250px;" /></a></p>
+</td>
+<td><p><em>Fig. 2</em></p>
+<p><a class="reference internal" href="_images/ble_check02.jpg"><img alt="ble2" class="align-top" src="_images/ble_check02.jpg" style="width: 250px;" /></a></p>
+</td>
+<td><p><em>Fig. 3</em></p>
+<p><a class="reference internal" href="_images/ble_check03.jpg"><img alt="ble3" class="align-top" src="_images/ble_check03.jpg" style="width: 250px;" /></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">MultiGeiger</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assembly.html">Assembly</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup_lora.html">Setup (LoRA)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#oled-display">OLED display</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#esp32-buttons">ESP32 buttons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dip-switches">DIP Switches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ble-bluetooth-low-energy">BLE - Bluetooth® Low Energy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html#license">License</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="setup_lora.html" title="previous chapter">Setup (LoRA)</a></li>
+      <li>Next: <a href="deployment.html" title="next chapter">Deployment</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020-2021, see AUTHORS.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/usage.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,435 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Assembly &#8212; MultiGeiger V1.17.0-dev documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Setup" href="setup.html" />
+    <link rel="prev" title="About" href="about.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="assembly">
+<span id="assemblyguide"></span><h1>Assembly<a class="headerlink" href="#assembly" title="Permalink to this headline">¶</a></h1>
+<a class="reference internal image-reference" href="_images/ecocurious.png"><img alt="_images/ecocurious.png" class="align-right" src="_images/ecocurious.png" style="width: 25%;" /></a>
+<section id="ergebnis">
+<h2>Ergebnis<a class="headerlink" href="#ergebnis" title="Permalink to this headline">¶</a></h2>
+<p>Das Multigeigerprojekt ist eine Idee der <a class="reference external" href="https://ecocurious.de/projekte/multigeiger-2/">Ecocurious-Initiative</a>.
+Das dazugehörige Open-Source Multigeigermessgerät zum Messen radioaktiver Gammastrahlung wird von der Community entwickelt.
+Die Echtzeitdaten der stationären Geräte werden per LoRaWAN oder WiFi/WLAN an einen Server gefunkt und auf einer <a class="reference external" href="https://ecocurious.de/multigeiger-karte/">Karte</a> visualisiert.
+So entsteht ein Radioaktivitätsmessnetz in Bürgerhand, das wir hiermit aufbauen wollen.
+Herzliche Einladung zum Mitmachen!</p>
+<a class="reference internal image-reference" href="_images/build_01_final.jpg"><img alt="_images/build_01_final.jpg" src="_images/build_01_final.jpg" style="width: 100%;" /></a>
+</section>
+<section id="bauteile">
+<h2>Bauteile<a class="headerlink" href="#bauteile" title="Permalink to this headline">¶</a></h2>
+<p>Elektronikbauteile aus (s. <a class="reference external" href="https://github.com/ecocurious2/MultiGeiger/blob/master/docs/hardware/MultiGeiger_Partlist.ods?raw=true">Stückliste</a>) zunächst sortieren und auf Vollständigkeit prüfen:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 8%" />
+<col style="width: 3%" />
+<col style="width: 41%" />
+<col style="width: 48%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>ID(s)</p></th>
+<th class="head"><p>#</p></th>
+<th class="head"><p>Bild</p></th>
+<th class="head"><p>Typ</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>T1</p></td>
+<td><p>1</p></td>
+<td><p><a class="reference internal" href="_images/build_02_parts_01.jpg"><img alt="parts01" src="_images/build_02_parts_01.jpg" style="width: 100px;" /></a></p></td>
+<td><p>N-MOS-Transistor BSP125</p></td>
+</tr>
+<tr class="row-odd"><td><p>R1</p></td>
+<td><p>1</p></td>
+<td><p><a class="reference internal" href="_images/build_02_parts_02.jpg"><img alt="parts02" src="_images/build_02_parts_02.jpg" style="width: 200px;" /></a></p></td>
+<td><p>10K Widerstand braun-schwarz-orange-gold</p></td>
+</tr>
+<tr class="row-even"><td><p>R2 R5</p></td>
+<td><p>2</p></td>
+<td><p><a class="reference internal" href="_images/build_02_parts_03.jpg"><img alt="parts03" src="_images/build_02_parts_03.jpg" style="width: 200px;" /></a></p></td>
+<td><p>1,0M Widerstand braun-schwarz-grün-gold</p></td>
+</tr>
+<tr class="row-odd"><td><p>R3 R4</p></td>
+<td><p>2</p></td>
+<td><p><a class="reference internal" href="_images/build_02_parts_04.jpg"><img alt="parts04" src="_images/build_02_parts_04.jpg" style="width: 200px;" /></a></p></td>
+<td><p>4,7M Widerstand gelb-violett-grün-gold</p></td>
+</tr>
+<tr class="row-even"><td><p>D1 D2</p></td>
+<td><p>2</p></td>
+<td><p><a class="reference internal" href="_images/build_02_parts_05.jpg"><img alt="parts05" src="_images/build_02_parts_05.jpg" style="width: 200px;" /></a></p></td>
+<td><p>Z-Diode ZY 200</p></td>
+</tr>
+<tr class="row-odd"><td><p>D3</p></td>
+<td><p>1</p></td>
+<td><p><a class="reference internal" href="_images/build_02_parts_06.jpg"><img alt="parts06" src="_images/build_02_parts_06.jpg" style="width: 200px;" /></a></p></td>
+<td><p>Z-Diode BZX55C3V3</p></td>
+</tr>
+<tr class="row-even"><td><p>D4</p></td>
+<td><p>1</p></td>
+<td><p><a class="reference internal" href="_images/build_02_parts_07.jpg"><img alt="parts07" src="_images/build_02_parts_07.jpg" style="width: 200px;" /></a></p></td>
+<td><p>Gleichrichterdiode BYV 26E</p></td>
+</tr>
+<tr class="row-odd"><td><p>D6</p></td>
+<td><p>1</p></td>
+<td><p><a class="reference internal" href="_images/build_02_parts_08.jpg"><img alt="parts08" src="_images/build_02_parts_08.jpg" style="width: 200px;" /></a></p></td>
+<td><p>Gleichrichterdiode GP10Y</p></td>
+</tr>
+<tr class="row-even"><td><p>C1</p></td>
+<td><p>1</p></td>
+<td><p><a class="reference internal" href="_images/build_02_parts_09.jpg"><img alt="parts09" src="_images/build_02_parts_09.jpg" style="width: 200px;" /></a></p></td>
+<td><p>ELKO Elektrolytkondensator 100 uF, 16 V</p></td>
+</tr>
+<tr class="row-odd"><td><p>C2</p></td>
+<td><p>1</p></td>
+<td><p><a class="reference internal" href="_images/build_02_parts_10.jpg"><img alt="parts10" src="_images/build_02_parts_10.jpg" style="width: 100px;" /></a></p></td>
+<td><p>Folienkondensator 10nF, 100V 0.01  100-</p></td>
+</tr>
+<tr class="row-even"><td><p>C3</p></td>
+<td><p>1</p></td>
+<td><p><a class="reference internal" href="_images/build_02_parts_11.jpg"><img alt="parts11" src="_images/build_02_parts_11.jpg" style="width: 150px;" /></a></p></td>
+<td><p>Folienkondensator 100nF, 630V 0.1  630-</p></td>
+</tr>
+<tr class="row-odd"><td><p>C4</p></td>
+<td><p>1</p></td>
+<td><p><a class="reference internal" href="_images/build_02_parts_12.jpg"><img alt="parts12" src="_images/build_02_parts_12.jpg" style="width: 70px;" /></a></p></td>
+<td><p>Folienkondensator 100pF, 1000V 100/1000-</p></td>
+</tr>
+<tr class="row-even"><td><p>L1</p></td>
+<td><p>1</p></td>
+<td><p><a class="reference internal" href="_images/build_02_parts_13.jpg"><img alt="parts13" src="_images/build_02_parts_13.jpg" style="width: 150px;" /></a></p></td>
+<td><p>Spule 150uH 154J</p></td>
+</tr>
+<tr class="row-odd"><td><p>Pz1</p></td>
+<td><p>1</p></td>
+<td><p><a class="reference internal" href="_images/build_02_parts_14.jpg"><img alt="parts14" src="_images/build_02_parts_14.jpg" style="width: 100px;" /></a></p></td>
+<td><p>Piezo-Lautsprecher</p></td>
+</tr>
+<tr class="row-even"><td><p>X1 X2</p></td>
+<td><p>2</p></td>
+<td><p><a class="reference internal" href="_images/build_02_parts_15.jpg"><img alt="parts15" src="_images/build_02_parts_15.jpg" style="width: 180px;" /></a></p></td>
+<td><p>Zählrohrhalter</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>2</p></td>
+<td><p><a class="reference internal" href="_images/build_02_parts_16.jpg"><img alt="parts16" src="_images/build_02_parts_16.jpg" style="width: 200px;" /></a></p></td>
+<td><p>Buchsenleiste Microcontroler-Modul</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>2</p></td>
+<td><p><a class="reference internal" href="_images/build_02_parts_17.jpg"><img alt="parts17" src="_images/build_02_parts_17.jpg" style="width: 200px;" /></a></p></td>
+<td><p>Je 30 cm isolierte Kupferlitze</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>1</p></td>
+<td></td>
+<td><p>Micro-USB Stromversorgung</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="lotarbeiten">
+<h2>Lötarbeiten<a class="headerlink" href="#lotarbeiten" title="Permalink to this headline">¶</a></h2>
+<section id="feldeffekt-transistor-t1">
+<h3>Feldeffekt-Transistor T1<a class="headerlink" href="#feldeffekt-transistor-t1" title="Permalink to this headline">¶</a></h3>
+<p>Als erstes Bauteil wird das einzige Bauteil im SMD-Bauform montiert.
+Mit Klebeband (Kreppband hat sich bewährt) wird er so auf die Platine geklebt, so dass die drei Pins sichtbar sind.
+Dann werden die vorderen Anschlüsse verlötet, das Klebeband vorsichtig entfernt und der hintere Anschluss verlötet.</p>
+<a class="reference internal image-reference" href="_images/build_03_solderingTransistor.jpg"><img alt="_images/build_03_solderingTransistor.jpg" class="align-center" src="_images/build_03_solderingTransistor.jpg" style="width: 50%;" /></a>
+</section>
+<section id="widerstande-und-dioden">
+<h3>Widerstände und Dioden<a class="headerlink" href="#widerstande-und-dioden" title="Permalink to this headline">¶</a></h3>
+<p>Die Widerstände und Dioden werden alle in einer Abbiegevorrichtung (oder entsprechend mit der Hand oder einer kleinen Zange) gebogen.
+Die Breite ist immer vier Einheiten – sprich ca. 10 mm.</p>
+<a class="reference internal image-reference" href="_images/build_04_bending.jpg"><img alt="_images/build_04_bending.jpg" class="align-center" src="_images/build_04_bending.jpg" style="width: 70%;" /></a>
+<p>Anschließend wird die Platine mit den Widerständen und Dioden bestückt.
+Bei den Dioden unbedingt auf die Polarität achten! Die Kathode (Minus-Pol) ist mit einem Strich auf Platine und Bauteil markiert.</p>
+<a class="reference internal image-reference" href="_images/build_05_soldering_before.jpg"><img alt="_images/build_05_soldering_before.jpg" src="_images/build_05_soldering_before.jpg" style="width: 100%;" /></a>
+<p>Vor dem Löten der Unterseite werden die Bauteile auf der Oberseite mit Klebeband fixiert, oder die Beinchen der Bauteile durch leichtes Auseinanderbiegen verklemmt.
+Dann Bauteile anlöten, Klebeband entfernen und überschüssigen Draht abschneiden.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Verletzungsgefahr: Beim Abschneiden darauf achten, dass der davonfliegende Draht niemanden verletzten kann.
+Möglichst festhalten beim Abschneiden!</p>
+</div>
+<a class="reference internal image-reference" href="_images/build_06_soldering_before_withTape.jpg"><img alt="_images/build_06_soldering_before_withTape.jpg" class="align-center" src="_images/build_06_soldering_before_withTape.jpg" style="width: 70%;" /></a>
+</section>
+<section id="kondensatoren-und-restliche-bauteile">
+<h3>Kondensatoren und restliche Bauteile<a class="headerlink" href="#kondensatoren-und-restliche-bauteile" title="Permalink to this headline">¶</a></h3>
+<p>Der Elektrolytkondensator (Elko) wird vorher mit einer Flachzange angewinkelt. Beim Elko unbedingt auf die Polung achten:
+Auf dem Elko ist der „–“-Pol markiert, auf der Platine der „+“-Pol. Die Beschriftungen müssen sich gegenüber liegen.
+Der Zählrohrhalter muss so herum eingesetzt werden, dass das Zählrohr nach außen steht kann – am besten testen!
+Dann die Bauteile mit Klebeband fixieren, anlöten und den überschüssigen Draht abschneiden.</p>
+<p>Kondensatoren, Zählrohrhalter, Spule, Piezo-Lautsprecher sind bestückt:</p>
+<a class="reference internal image-reference" href="_images/build_07_soldering_filmCapacitors.jpg"><img alt="Kondensatoren, Zählrohrhalter, Spule, Piezo-Lautsprecher sind bestückt" src="_images/build_07_soldering_filmCapacitors.jpg" style="width: 100%;" /></a>
+</section>
+<section id="buchsenleisten-und-mikrocontroller-modul">
+<h3>Buchsenleisten und Mikrocontroller-Modul<a class="headerlink" href="#buchsenleisten-und-mikrocontroller-modul" title="Permalink to this headline">¶</a></h3>
+<p>Die Buchsenleiste muss vorher evtl. noch gekürzt werden.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Dabei muss der Seitenschneider genau auf dem <strong>letzten nicht mehr benötigten Kontakt</strong> angesetzt werden – <strong>nicht dort wo man ihn eigentlich kürzen will</strong> – ansonsten kann sie splittern.
+Beim Abschneiden wegfliegende Teile möglichst festhalten!</p>
+</div>
+<a class="reference internal image-reference" href="_images/build_08_soldering_femaleConnectorStrip.jpg"><img alt="_images/build_08_soldering_femaleConnectorStrip.jpg" class="align-center" src="_images/build_08_soldering_femaleConnectorStrip.jpg" style="width: 50%;" /></a>
+<p>Wird der große Piezo-Lautsprecher verwendet, so sollte die Buchsenleiste mit einer Feile etwas abgefeilt werden (vorher ausprobieren).
+Am einfachsten geht das an der originalen, nicht bearbeiteten Seite der Buchsenleiste.
+Je nachdem, welches Mikrocontroller-Board verwendet wird, müssen die Buchsenleisten an den entsprechenden Stellen bestückt werden.</p>
+<a class="reference internal image-reference" href="_images/build_09_soldering_femaleConnectorStrip_location.jpg"><img alt="_images/build_09_soldering_femaleConnectorStrip_location.jpg" src="_images/build_09_soldering_femaleConnectorStrip_location.jpg" style="width: 100%;" /></a>
+<p>Die Winkel der Buchsenleiste sollten genau stimmen. Daher am besten so vorgehen:</p>
+<ul class="simple">
+<li><p>Die erste Buchsenleiste einstecken.</p></li>
+<li><p>Von unten her eine Lötstelle in der Mitte löten, die Lötstelle nochmals heiß machen und gleichzeitig die Buchsenleiste justieren (rechter Winkel, alle Pins richtig).</p></li>
+<li><p>Die zweite Buchsenleiste einstecken.</p></li>
+<li><p>In beide Buchsenleisten die Stiftleiste aus dem Mikrocontroller-Modul-Set einstecken, so dass deren längerer Teil der Stiftleiste in der Buchsenleiste steckt.</p></li>
+<li><p>Das Mikrocontroller-Modul aufstecken, so dass das Display sichtbar ist und die Mikro-USB-Buchse über dem Piezo-Lautsprecher liegt.</p></li>
+<li><p>Alles mit einem schmalen Klebeband fixieren (siehe Bild unten), so dass alle Lötstellen zugänglich sind.</p></li>
+<li><p>Nun können alle Kontakte gelötet werden.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Das OLED-Grafikdisplay ist über eine dünne Flex-Leitung angeschlossen, die nicht zu heiß werden darf.
+Im Zweifel lötet man die Pins in der Nähe der Flex-Leitung nicht an – sie werden nicht benötigt.</p>
+</div>
+<a class="reference internal image-reference" href="_images/build_10_soldering_femaleConnectorStripESP32withTape.jpg"><img alt="_images/build_10_soldering_femaleConnectorStripESP32withTape.jpg" src="_images/build_10_soldering_femaleConnectorStripESP32withTape.jpg" style="width: 100%;" /></a>
+<p>Nach dem Löten kann das Mikrocontroller-Modul mit wippenden Bewegungen vorsichtig abgezogen werden.</p>
+<ul class="simple">
+<li><p>Beim Mikrocontroller-Modul sind Pin-Beschriftungsaufkleber mit dabei.
+Diese können jetzt seitlich aufgeklebt werden.
+Welcher Pin wo ist, steht auf der Unterseite des Mikrocontroller-Moduls.</p></li>
+<li><p>Das Kabel für den Anschluss der Zählrohr-Kathode (Minus-Anschluss) an Klammer und Platine anlöten.</p></li>
+<li><p>Kabel mit jeweils einem Tropfen Heißkleber sichern (Zugentlastung).</p></li>
+<li><p>Sichtkontrolle (hast du Lötstellen vergessen, sind Lötbrücken entstanden, …).</p></li>
+<li><p>Mikrocontroller-Modul wieder aufstecken.</p></li>
+<li><p>Zählrohr anklemmen: der Plus-Pol (Anode) ist markiert und muss in Richtung Platine zeigen.</p></li>
+<li><p>Eine erste Funktionskontrolle ist nun möglich, s. <a class="reference internal" href="#inbetriebnahme">Inbetriebnahme</a>.</p></li>
+</ul>
+<p>Fertige Geigerzähler- und Mikrocontrollerplatine:</p>
+<a class="reference internal image-reference" href="_images/build_11_soldering_done.jpg"><img alt="Fertige Geigerzähler- und Mikrocontrollerplatine" src="_images/build_11_soldering_done.jpg" style="width: 100%;" /></a>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Das dünne Glas des OLED-Grafikdisplays ist empfindlich.
+Bitte keine Kraft auf das Display ausüben, sondern nur auf die Mikrocontrollerplatine!</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Verletzungsgefahr: Auf der Geigerzählerplatine wird eine <strong>Spannung von 400 Volt</strong> erzeugt.
+Diese hält sich auch noch längere Zeit <strong>nach dem Ausschalten des Geräts</strong>.
+Bei Berührung kann es zu kleineren Stromschlägen kommen, die normalerweise harmlos sind.
+Dennoch sollten sie vermieden werden!</p>
+<a class="reference internal image-reference" href="_images/build_12_highVoltageWarningSign.png"><img alt="_images/build_12_highVoltageWarningSign.png" src="_images/build_12_highVoltageWarningSign.png" style="width: 70%;" /></a>
+<p><strong>Man sollte vor dem Arbeiten an der Schaltung den Kondensator entladen.</strong>
+Am einfachsten macht man dies mit einer zweiten, ca. 30 cm langen Leitung, mit der man Anode und Kathode des Zählrohrs für etwa eine Sekunde kurzschließt.
+Dies schützt nicht nur vor unangenehmen Stromschlägen, sondern schützt auch die empfindliche elektronische Schaltung.</p>
+</div>
+</section>
+</section>
+<section id="gehause">
+<h2>Gehäuse<a class="headerlink" href="#gehause" title="Permalink to this headline">¶</a></h2>
+<section id="funktionen-des-gehauses">
+<h3>Funktionen des Gehäuses<a class="headerlink" href="#funktionen-des-gehauses" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Es schützt die Elektronik vor Umwelteinflüssen (z. B. Regen) und Insekten (daher sollte kein Zugang von außen zur Elektronik größer sein als 0,5 mm).</p></li>
+<li><p>Es hält das Zählrohr in einer Höhe von 1 m über der Wiese – somit sind unsere Messwerte (bestmöglich) vergleichbar zu denen des amtlichen <a class="reference external" href="https://odlinfo.bfs.de/DE/index.html">ODL-Messnetzes</a>.</p></li>
+</ul>
+</section>
+<section id="rohre">
+<h3>Rohre<a class="headerlink" href="#rohre" title="Permalink to this headline">¶</a></h3>
+<a class="reference internal image-reference" href="_images/build_13_pipe.jpg"><img alt="_images/build_13_pipe.jpg" class="align-center" src="_images/build_13_pipe.jpg" style="width: 600px;" /></a>
+<ul class="simple">
+<li><p>Rohr für das Elektronikgehäuse: Zunächst wird das Rohr mit einer Säge auf entsprechende Länge abgesägt.
+Die Muffe (Aufweitung) zeigt nach unten.</p></li>
+<li><p>Rohr für den Erdspieß: Der noch umgesägte Teil des Restes ist das obere Ende des Erdspießes.
+Unten wird der Erdspieß auf entsprechende Länge abgesägt im 45-Grad-Winkel.
+Mit diesem schrägen Anschnitt lässt sich der Erdspieß später mit leichten Drehbewegungen gut in die Erde bohren.
+Alternativ kann man diesen Teil des Rohrs kurzhalten (ca. 15 cm) und in einem verzinkten Sonnenschirmhalter mit Erdspieß (Ø40mm) festklemmen.</p></li>
+<li><p>Lüftungs-/Kabelloch bohren: Mit einem Reißnagel o. ä. wird das Loch seitlich im Erdspieß vorgestochen.
+Anschließend wird es aufgebohrt. Zuletzt wird es mit einem großen Bohrer / Schälbohrer auf etwa 17 mm Durchmesser aufgebohrt.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Verletzungsgefahr: Mit der Klinge/dem Bohrer immer nach außen, d. h. vom Körper weg, schneiden oder bohren!</p>
+</div>
+</section>
+<section id="dach-und-zwischenboden">
+<h3>Dach und Zwischenboden<a class="headerlink" href="#dach-und-zwischenboden" title="Permalink to this headline">¶</a></h3>
+<a class="reference internal image-reference" href="_images/build_14_cap.jpg"><img alt="Deckel" class="align-right" src="_images/build_14_cap.jpg" style="width: 20%;" /></a>
+<p>Für das Dach kann man einen Rohrabschlussstopfen oben vorsichtig über das Rohr schieben, s. Bild rechts.</p>
+<a class="reference internal image-reference" href="_images/build_14_bottle_bottom.jpg"><img alt="Zwischenboden" class="align-left" src="_images/build_14_bottle_bottom.jpg" style="width: 30%;" /></a>
+<p>Als Zwischenboden verwenden wir eine Kruke, also eine Plastikdose, die in Apotheken zum Abfüllen von Salben verwendet wird.
+Der rote Deckel kann als Material für eine kabeldurchführungsverkleinernde Zwischenbodenauflage dienen.</p>
+<p>Für den Zwischenboden wird lediglich das Gewinde vorsichtig mit der Säge abgesägt, s. Bild links.
+Der „Kragen“ muss bestehen bleiben, da er als Anschlag dient.</p>
+<p>In den Zwischenboden wird in der Mitte ein Loch zur Kabeldurchführung mit 10 mm gebohrt.
+Der Stecker des Kabels muss durch das Loch passen.</p>
+<p>Eine Zwischenbodenauflage dient zum Schutz vor Insekten, da sie das Loch der Kabeldurchführung verkleinert.
+Man kann dafür z. B. den roten Deckel der Kruke oder ein ähnliches Stück Kunststoff verwenden.</p>
+<p>Es wird die Mitte markiert und dort ein Loch mit dem Durchmesser des Stromkabels (ca. 5 mm) gebohrt.
+Anschließend werden die Ecken abgeschnitten.
+Zusätzlich wird ein Verbindungsschlitz von außen zum Loch geschnitten.</p>
+<p>Aufbau der Zwischenbodenauflage (in zwei Arbeitsschritten):</p>
+<a class="reference internal image-reference" href="_images/build_15_intermediateFloorSeal.jpg"><img alt="Aufbau der Zwischenbodenauflage (in zwei Arbeitsschritten)" class="align-center" src="_images/build_15_intermediateFloorSeal.jpg" style="width: 70%;" /></a>
+</section>
+<section id="installationsplatte">
+<h3>Installationsplatte<a class="headerlink" href="#installationsplatte" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Die Installationsplatte kann aus dem Ober- oder Unterteil eines Kabelkanals gefertigt werden.
+Dazu werden die Seitenteile vorsichtig mit einem Messer abgeschnitten.
+Danach wird der dadurch entstandene, biegsame Kunststoffstreifen auf die richtige Länge gebracht.
+Hierzu kann eine starke Schere verwendet werden.</p></li>
+<li><p>Löcher durch Installationsplatte bohren: Elektronik und Zählrohr werden so mit Kabelbindern auf Installationsplatte fixiert, dass das Zählrohr sich auf 1 m Höhe befindet, wenn der Erdspieß 25 cm in der Erde steckt.
+Das Zählrohr zeigt nach unten.
+Die Löcher werden mit dem Reißnagel vorgestochen und dann auf 3 mm aufgebohrt, s. Bild „Bohrplan Installationsplatte“.</p></li>
+<li><p>Die Platine wird lediglich mit einem Kabelbinder auf der Platte montiert, der durch beide Löcher gezogen wird.
+Er verläuft unterhalb des USB-Steckers.</p></li>
+</ul>
+<p>Bohrplan Installationsplatte:</p>
+<a class="reference internal image-reference" href="_images/build_16_installationPlate.jpg"><img alt="Bohrplan Installationsplatte" class="align-center" src="_images/build_16_installationPlate.jpg" style="width: 500px;" /></a>
+</section>
+<section id="einbau">
+<h3>Einbau<a class="headerlink" href="#einbau" title="Permalink to this headline">¶</a></h3>
+<p>Einbau des Geräts (die roten Pfeile markieren Kabelbinder):</p>
+<a class="reference internal image-reference" href="_images/build_17_finalAssembly.jpg"><img alt="_images/build_17_finalAssembly.jpg" class="align-center" src="_images/build_17_finalAssembly.jpg" style="width: 600px;" /></a>
+<ul class="simple">
+<li><p>Platine und Zählrohr werden mit Kabelbinder auf die Installationsplatte montiert.</p></li>
+<li><p>In die Micro-USB-Buchse wird der passende Adapter gesteckt.</p></li>
+<li><p>Das „10 m Verlängerungskabel“ wird richtig herum zunächst durch den Erdspieß und dann durch den Zwischenboden gefädelt.
+Anschließend wird er mit dem Adapter verbunden.</p></li>
+<li><p>Danach wird die Zwischenbodenauflage oberhalb des Zwischenbodens vorsichtig auf das Kabel geschoben.</p></li>
+<li><p>Oberhalb der Zwischenbodenauflage wird ein Kabelbinder auf das Kabel gezurrt, so dass eine Zugentlastung entsteht.</p></li>
+<li><p>Erster Test des Gehäuses: Wir schieben erst vorsichtig die Installationsplatte in das Elektronikgehäuse.
+Anschließend folgen Zwischenboden und der Erdspieß.</p></li>
+<li><p>Wenn alles passt wird noch die Zwischenbodenauflage mit Silikon-Kleber auf den Zwischenboden geklebt und mit Kreppband (bis zum Aushärten) fixiert.</p></li>
+<li><p>Der Warn-Aufkleber „Vorsicht Hochspannung“ wird auf die Installationsplatte geklebt.</p></li>
+</ul>
+</section>
+</section>
+<section id="inbetriebnahme">
+<h2>Inbetriebnahme<a class="headerlink" href="#inbetriebnahme" title="Permalink to this headline">¶</a></h2>
+<p>WLAN-Variante: Das Gerät baut einen eigenen WLAN-Accesspoint (AP) auf.
+Die SSID des AP lautet ESP32-xxxxxxxx, wobei die xxx die Chip-ID des WLAN-Chips sind (Beispiel: ESP32-51564452).
+Bitte diese Nummer notieren, sie wird später für die Anmeldung benötigt, z. B. bei <a class="reference external" href="https://devices.sensor.community/">https://devices.sensor.community/</a>.
+Der Access-Point bleibt für 30 s aktiv. Danach versucht das Gerät, sich mit dem (früher) eingestellten WLAN zu verbinden.
+Dieser Verbindungsversuch dauert ebenfalls 30 s. Kommt keine Verbindung zustande, wird wieder der eigene AP für erzeugt.
+Das standardmäßig vergebene WLAN-Kennwort ist „<em>ESP32Geiger</em>“ und sollte zeitnah geändert werden.</p>
+<p>Weitere Informationen: <a class="reference internal" href="deployment.html#deployment"><span class="std std-ref">Deployment</span></a> und <a class="reference internal" href="usage.html#usage"><span class="std std-ref">Usage</span></a>.</p>
+<p><strong>Wir wünschen viel Freude mit dem neu gebauten Gerät und hoffen dass es niemals unnatürliche bzw. gesundheitsschädliche Ausschläge messen wird!</strong></p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">MultiGeiger</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Assembly</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ergebnis">Ergebnis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#bauteile">Bauteile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lotarbeiten">Lötarbeiten</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gehause">Gehäuse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#inbetriebnahme">Inbetriebnahme</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup_lora.html">Setup (LoRA)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resources.html">Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html#license">License</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="about.html" title="previous chapter">About</a></li>
+      <li>Next: <a href="setup.html" title="next chapter">Setup</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020-2021, see AUTHORS.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/assembly.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

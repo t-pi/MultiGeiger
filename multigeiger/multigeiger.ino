@@ -194,6 +194,7 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
     update_bledata((unsigned int)(count_rate * 60));
 
     // Sound local alarm?
+<<<<<<< HEAD
     if ((soundLocalAlarm || telegramSendLocalAlarm) && GMC_factor_uSvph > 0) {
       bool isAlarm = false;
       if (accumulated_dose_rate > localAlarmThreshold) {
@@ -208,6 +209,25 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
         if (soundLocalAlarm)
           alarm();
         if (telegramSendLocalAlarm)
+=======
+    if ((soundLocalAlarm || sendLocalAlarmToMessenger) && GMC_factor_uSvph > 0) {
+      if (accumulated_Dose_Rate > localAlarmThreshold) {
+        log(WARNING, "Local alarm: Accumulated dose of %.3f µSv/h above threshold at %.3f µSv/h", accumulated_Dose_Rate, localAlarmThreshold);
+        if (soundLocalAlarm) {
+          alarm();
+        }
+        if (sendLocalAlarmToMessenger) {
+          transmit_userinfo(tubes[TUBE_TYPE].type, tubes[TUBE_TYPE].nbr, tubes[TUBE_TYPE].cps_to_uSvph,
+                            (unsigned int)(Count_Rate * 60), (unsigned int)(accumulated_Count_Rate * 60), accumulated_Dose_Rate,
+                            have_thp, temperature, humidity, pressure, wifi_status, true);
+        }
+      } else if (Dose_Rate > (accumulated_Dose_Rate * localAlarmFactor)) {
+        log(WARNING, "Local alarm: Current dose of %.3f > %d x accumulated dose of %.3f µSv/h", Dose_Rate, localAlarmFactor, accumulated_Dose_Rate);
+        if (soundLocalAlarm) {
+          alarm();
+        }
+        if (sendLocalAlarmToMessenger) {
+>>>>>>> 1d18895 (Messenger and telegram config via IotWebConf)
           transmit_userinfo(tubes[TUBE_TYPE].type, tubes[TUBE_TYPE].nbr, tubes[TUBE_TYPE].cps_to_uSvph,
                             (unsigned int)(count_rate * 60), (unsigned int)(accumulated_count_rate * 60), accumulated_dose_rate,
                             have_thp, temperature, humidity, pressure, wifi_status, true);

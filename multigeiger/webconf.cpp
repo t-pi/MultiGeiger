@@ -64,7 +64,7 @@ iotwebconf::TextParameter deveuiParam = iotwebconf::TextParameter("DEVEUI", "dev
 iotwebconf::TextParameter appeuiParam = iotwebconf::TextParameter("APPEUI", "appeui", appeui, 17);
 iotwebconf::TextParameter appkeyParam = iotwebconf::TextParameter("APPKEY", "appkey", appkey, 33);
 
-iotwebconf::ParameterGroup grpAlarm = iotwebconf::ParameterGroup("alarm", "Local Alarm Setting");
+iotwebconf::ParameterGroup grpAlarm = iotwebconf::ParameterGroup("alarm", "Local Alarm Settings");
 iotwebconf::CheckboxParameter soundLocalAlarmParam = iotwebconf::CheckboxParameter("Enable local alarm sound", "soundLocalAlarm", soundLocalAlarm_c, CHECKBOX_LEN, soundLocalAlarm);
 iotwebconf::FloatTParameter localAlarmThresholdParam =
   iotwebconf::Builder<iotwebconf::FloatTParameter>("localAlarmThreshold").
@@ -180,6 +180,8 @@ void loadConfigVariables(void) {
   soundLocalAlarm = soundLocalAlarmParam.isChecked();
   localAlarmThreshold = localAlarmThresholdParam.value();
   localAlarmFactor = localAlarmFactorParam.value();
+  sendDataToMessengerEvery = sendDataToMessengerEveryParam.value();
+  sendLocalAlarmToMessenger = sendLocalAlarmToMessengerParam.isChecked();
 }
 
 void configSaved(void) {
@@ -232,6 +234,10 @@ void setup_webconf(bool loraHardware) {
   // if we don't have LoRa hardware, do not send to LoRa
   if (!isLoraBoard)
     sendToLora = false;
+
+  // if we don't have a valid Messenger config, do not send to Messenger
+  if ((sizeof(telegramBotToken) < 40) || (sizeof(telegramChatId) < 7))
+    sendDataToMessengerEvery = -1;
 
   iotWebConf.init();
 

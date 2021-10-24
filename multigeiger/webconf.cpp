@@ -235,10 +235,6 @@ void setup_webconf(bool loraHardware) {
   if (!isLoraBoard)
     sendToLora = false;
 
-  // if we don't have a valid Messenger config, do not send to Messenger
-  if ((sizeof(telegramBotToken) < 40) || (sizeof(telegramChatId) < 7))
-    sendDataToMessengerEvery = -1;
-
   iotWebConf.init();
 
   loadConfigVariables();

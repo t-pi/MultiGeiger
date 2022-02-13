@@ -124,19 +124,22 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
   };
 
   // Events
+  // 1. add new incremental status const for new event
   const byte HEARTBEAT = 0;
   const byte MEASUREMENT = 1;
   const byte ONE_MINUTE = 2;
   const byte TELEGRAM_DATA = 3;
 
+  // 2. adjust the total number of events resp. saved states
   const int savedstates_count = 4;
 
+  // 3. add interval in ms to the end of interval array - 4. see below
   static GM_State saved_state[savedstates_count];
   long event_interval[savedstates_count] = {
     HEARTBEAT_INTERVAL * 1000,  // Basic heartbeat interval
     MEASUREMENT_INTERVAL * 1000,  // Send measurements to server interval
-    60 * 1000,  // 60 sec
-    SEND_DATA_TO_MESSENGER_EVERY * 1000  // Send to Telegram messenger interval
+    60 * 1000,  // 60 sec for ONE_MINUTE log
+    sendDataToMessengerEvery * 1000  // Send to Telegram messenger interval (configurable)
   };
 
   // millis(), counts or hv_pulses overflow?
@@ -194,8 +197,7 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
     update_bledata((unsigned int)(count_rate * 60));
 
     // Sound local alarm?
-<<<<<<< HEAD
-    if ((soundLocalAlarm || telegramSendLocalAlarm) && GMC_factor_uSvph > 0) {
+    if ((soundLocalAlarm || sendLocalAlarmToMessenger) && GMC_factor_uSvph > 0) {
       bool isAlarm = false;
       if (accumulated_dose_rate > localAlarmThreshold) {
         log(WARNING, "Local alarm: Accumulated dose of %.3f µSv/h above threshold at %.3f µSv/h", accumulated_dose_rate, localAlarmThreshold);
@@ -208,20 +210,7 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
       if (isAlarm) {
         if (soundLocalAlarm)
           alarm();
-        if (telegramSendLocalAlarm)
-=======
-    if ((soundLocalAlarm || sendLocalAlarmToMessenger) && GMC_factor_uSvph > 0) {
-      if ((accumulated_Dose_Rate > localAlarmThreshold) || (Dose_Rate > (accumulated_Dose_Rate * localAlarmFactor))) {
-        if (accumulated_Dose_Rate > localAlarmThreshold) {
-          log(WARNING, "Local alarm: Accumulated dose of %.3f µSv/h above threshold at %.3f µSv/h", accumulated_Dose_Rate, localAlarmThreshold);
-        } else {
-          log(WARNING, "Local alarm: Current dose of %.3f > %d x accumulated dose of %.3f µSv/h", Dose_Rate, localAlarmFactor, accumulated_Dose_Rate);
-        }
-        if (soundLocalAlarm) {
-          alarm();
-        }
-        if (sendLocalAlarmToMessenger) {
->>>>>>> 1d18895 (Messenger and telegram config via IotWebConf)
+        if (sendLocalAlarmToMessenger)
           transmit_userinfo(tubes[TUBE_TYPE].type, tubes[TUBE_TYPE].nbr, tubes[TUBE_TYPE].cps_to_uSvph,
                             (unsigned int)(count_rate * 60), (unsigned int)(accumulated_count_rate * 60), accumulated_dose_rate,
                             have_thp, temperature, humidity, pressure, wifi_status, true);
@@ -244,6 +233,7 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
       count_rate = (dt != 0) ? (float)counts * 1000.0 / (float)dt : 0.0;
       dose_rate = count_rate * GMC_factor_uSvph;
 
+      // 4. (s. above) add commands for new event to switch case structure. That's it.
       switch (st) {
       case MEASUREMENT:
         log(DEBUG, "Measured GM: cpm= %d HV=%d", current_cpm, hv_pulses);
@@ -255,10 +245,13 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
           log_data_one_minute((current_ms / 1000), current_cpm, counts);
         break;
       case TELEGRAM_DATA:
-        log(DEBUG, "Sending data to Telegram messenger");
-        transmit_userinfo(tubes[TUBE_TYPE].type, tubes[TUBE_TYPE].nbr, tubes[TUBE_TYPE].cps_to_uSvph,
-              current_cpm, accumulated_count_rate, accumulated_dose_rate,
-              have_thp, temperature, humidity, pressure, wifi_status, false);
+        if (sendDataToMessengerEvery > 0) {
+          log(DEBUG, "Sending data to Telegram messenger");
+          transmit_userinfo(tubes[TUBE_TYPE].type, tubes[TUBE_TYPE].nbr, tubes[TUBE_TYPE].cps_to_uSvph,
+                current_cpm, accumulated_count_rate, accumulated_dose_rate,
+                have_thp, temperature, humidity, pressure, wifi_status, false);
+        }
+        break;
       default:
         break;
       }

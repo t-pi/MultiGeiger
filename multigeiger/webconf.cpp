@@ -187,6 +187,10 @@ void loadConfigVariables(void) {
 void configSaved(void) {
   log(INFO, "Config saved. ");
   loadConfigVariables();
+  if ((strlen(telegramBotToken) < 40) || (strlen(telegramChatId) < 7)) {
+    sendDataToMessengerEvery = 0;
+    sendLocalAlarmToMessenger = false;
+  }
   tick_enable(true);
 }
 

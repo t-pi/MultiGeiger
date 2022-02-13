@@ -71,22 +71,23 @@ void setup_transmission(const char *version, char *ssid, bool loraHardware) {
   c_customsrv.wc->setCACert(ca_certs);
   c_customsrv.hc = new HTTPClient;
 
-  if ((strlen(telegramBotToken) < 40) || (strlen(telegramChatId) < 7))
-    sendDataToMessengerEvery = -1;
-
   c_telegram.wc = new WiFiClientSecure;
   c_telegram.wc->setCACert(TELEGRAM_CERTIFICATE_ROOT);
   c_telegram.hc = new HTTPClient;
 
-  if (sendDataToMessengerEvery >= 0) {
+  if ((strlen(telegramBotToken) < 40) || (strlen(telegramChatId) < 7)) {
+    sendDataToMessengerEvery = 0;
+    sendLocalAlarmToMessenger = false;
+    set_status(STATUS_TELEGRAM, ST_TELEGRAM_OFF);
+  } else {
     log(DEBUG, "Starting Telegram Bot...");
     telegram_bot = new UniversalTelegramBot(telegramBotToken, *(c_telegram.wc));
+    set_status(STATUS_TELEGRAM, ST_TELEGRAM_INIT);
   }
 
   set_status(STATUS_SCOMM, sendToCommunity ? ST_SCOMM_INIT : ST_SCOMM_OFF);
   set_status(STATUS_MADAVI, sendToMadavi ? ST_MADAVI_INIT : ST_MADAVI_OFF);
   set_status(STATUS_TTN, sendToLora ? ST_TTN_INIT : ST_TTN_OFF);
-  set_status(STATUS_TELEGRAM, (sendDataToMessengerEvery >= 0) ? ST_TELEGRAM_INIT : ST_TELEGRAM_OFF);
 }
 
 void poll_transmission() {
@@ -320,50 +321,41 @@ void transmit_userinfo(String tube_type, int tube_nbr, float tube_factor, unsign
   if (wifi_status != ST_WIFI_CONNECTED)
     return;
 
-  // if we don't have a valid Messenger config, do not send to Messenger
-  if (sendDataToMessengerEvery < 0)
+  if ((sendDataToMessengerEvery == 0) && !sendLocalAlarmToMessenger)
     return;
-  // in case the config has been changed in the meantime
+
   if ((strlen(telegramBotToken) < 40) || (strlen(telegramChatId) < 7)) {
-    sendDataToMessengerEvery = -1;
+    sendDataToMessengerEvery = 0;
+    sendLocalAlarmToMessenger = false;
+    set_status(STATUS_TELEGRAM, ST_TELEGRAM_OFF);
     return;
   }
 
-  static unsigned int transmitCounter = 0;
-  transmitCounter++;
-  if (transmitCounter == 27720) transmitCounter = 0;  // 27720 % 1..12 == 0
-
   char localEspId[16];
   char thp_text[60];
+  bool telegram_ok;
+  char message[120];
 
   chipID.toCharArray(localEspId, sizeof(localEspId));
   if (have_thp) {
     sprintf(thp_text, "\nBME data: %.1fC %.1f%% %.1fhPa", temperature, humidity, pressure/100);
   }
 
-  if (((sendDataToMessengerEvery > 0) && (transmitCounter % sendDataToMessengerEvery == 0))
-      || ((sendDataToMessengerEvery >= 0) && alarm_status)) {
-    bool telegram_ok;
-    char message[120];
-    log(INFO, "Sending to Telegram messenger ...");
-    set_status(STATUS_TELEGRAM, ST_TELEGRAM_SENDING);
-    display_status();
-    if (alarm_status) {
-      if (tube_nbr > 0)
-        sprintf(message, "<b>--- MULTIGEIGER ALERT ! ---</b>\n<code>%s</code> rate too high:\n%.2f nSv/h (accumulated: %.2f nSv/h)", localEspId, cpm*tube_factor*1000/60, accu_rate*1000);
-      else
-        sprintf(message, "<b>--- MULTIGEIGER ALERT ! ---</b>\n<code>%s</code> rate too high:\n%d (accumulated: %d)", localEspId, cpm, accu_cpm);
-    } else {
-      if (tube_nbr > 0)
-        sprintf(message, "MultiGeiger <code>%s</code> rates:\n%.2f nSv/h (accumulated: %.2f nSv/h)%s", localEspId, cpm*tube_factor*1000/60, accu_rate*1000, have_thp ? thp_text : "");
-      else
-        sprintf(message, "MultiGeiger <code>%s</code> CPM:\n%d (accumulated: %d)%s", localEspId, cpm, accu_cpm, have_thp ? thp_text : "");
-    }
-    telegram_ok = telegram_bot->sendMessage(telegramChatId, message, "HTML");
-    log(INFO, "Sent to Telegram messenger, status: %s", telegram_ok ? "ok" : "error");
-    set_status(STATUS_TELEGRAM, telegram_ok ? ST_TELEGRAM_IDLE : ST_TELEGRAM_ERROR);
-    display_status();
+  log(INFO, "Sending to Telegram messenger ...");
+  set_status(STATUS_TELEGRAM, ST_TELEGRAM_SENDING);
+  if (alarm_status) {
+    if (tube_nbr > 0)
+      sprintf(message, "<b>--- MULTIGEIGER ALERT ! ---</b>\n<code>%s</code> rate too high:\n%.2f nSv/h (accumulated: %.2f nSv/h)", localEspId, cpm*tube_factor*1000/60, accu_rate*1000);
+    else
+      sprintf(message, "<b>--- MULTIGEIGER ALERT ! ---</b>\n<code>%s</code> rate too high:\n%d (accumulated: %d)", localEspId, cpm, accu_cpm);
+  } else {
+    if (tube_nbr > 0)
+      sprintf(message, "MultiGeiger <code>%s</code> rates:\n%.2f nSv/h (accumulated: %.2f nSv/h)%s", localEspId, cpm*tube_factor*1000/60, accu_rate*1000, have_thp ? thp_text : "");
+    else
+      sprintf(message, "MultiGeiger <code>%s</code> CPM:\n%d (accumulated: %d)%s", localEspId, cpm, accu_cpm, have_thp ? thp_text : "");
   }
-
+  telegram_ok = telegram_bot->sendMessage(telegramChatId, message, "HTML", 0);
+  log(INFO, "Sent to Telegram messenger, status: %s", telegram_ok ? "ok" : "error");
+  set_status(STATUS_TELEGRAM, telegram_ok ? ST_TELEGRAM_IDLE : ST_TELEGRAM_ERROR);
 }
 

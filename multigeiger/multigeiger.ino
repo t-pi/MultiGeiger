@@ -211,9 +211,9 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
         if (soundLocalAlarm)
           alarm();
         if (sendLocalAlarmToMessenger)
-          transmit_userinfo(tubes[TUBE_TYPE].type, tubes[TUBE_TYPE].nbr, tubes[TUBE_TYPE].cps_to_uSvph,
-                            (unsigned int)(count_rate * 60), (unsigned int)(accumulated_count_rate * 60), accumulated_dose_rate,
-                            have_thp, temperature, humidity, pressure, wifi_status, true);
+          transmit_data_to_telegram(tubes[TUBE_TYPE].nbr, tubes[TUBE_TYPE].cps_to_uSvph,
+                                    (unsigned int)(count_rate * 60), (unsigned int)(accumulated_count_rate * 60), accumulated_dose_rate,
+                                    have_thp, temperature, humidity, pressure, wifi_status, true);
       }
     }
     saved_state[HEARTBEAT].timestamp = current_ms;
@@ -237,8 +237,11 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
       switch (st) {
       case MEASUREMENT:
         log(DEBUG, "Measured GM: cpm= %d HV=%d", current_cpm, hv_pulses);
-        transmit_data(tubes[TUBE_TYPE].type, tubes[TUBE_TYPE].nbr, dt, hv_pulses, counts, current_cpm,
-                      have_thp, temperature, humidity, pressure, wifi_status);
+        transmit_data_to_web(tubes[TUBE_TYPE].nbr, dt, hv_pulses, counts, current_cpm,
+                             have_thp, temperature, humidity, pressure, wifi_status);
+        if (sendToLora)
+          transmit_data_to_ttn(tubes[TUBE_TYPE].nbr, dt, hv_pulses, counts, current_cpm,
+                               have_thp, temperature, humidity, pressure);
         break;
       case ONE_MINUTE:
         if (Serial_Print_Mode == Serial_One_Minute_Log)
@@ -247,9 +250,9 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
       case TELEGRAM_DATA:
         if (sendDataToMessengerEvery > 0) {
           log(DEBUG, "Sending data to Telegram messenger");
-          transmit_userinfo(tubes[TUBE_TYPE].type, tubes[TUBE_TYPE].nbr, tubes[TUBE_TYPE].cps_to_uSvph,
-                current_cpm, accumulated_count_rate, accumulated_dose_rate,
-                have_thp, temperature, humidity, pressure, wifi_status, false);
+          transmit_data_to_telegram(tubes[TUBE_TYPE].nbr, tubes[TUBE_TYPE].cps_to_uSvph,
+                                    current_cpm, accumulated_count_rate, accumulated_dose_rate,
+                                    have_thp, temperature, humidity, pressure, wifi_status, false);
         }
         break;
       default:

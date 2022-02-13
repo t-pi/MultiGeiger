@@ -32,6 +32,32 @@
 // Get your own toilet URL and put it here before setting this to true.
 #define SEND2CUSTOMSRV false
 
+#define MADAVI_PREFIX_GEIGER "Radiation_"
+#define MADAVI_PREFIX_THP "BME280_"
+
+const char *json_format_radiation = R"=====(
+{
+ "software_version": "%s",
+ "sensordatavalues": [
+  {"value_type": "%scounts_per_minute", "value": "%d"},
+  {"value_type": "%shv_pulses", "value": "%d"},
+  {"value_type": "%scounts", "value": "%d"},
+  {"value_type": "%ssample_time_ms", "value": "%d"}
+ ]
+}
+)=====";
+
+const char *json_format_thp = R"=====(
+{
+ "software_version": "%s",
+ "sensordatavalues": [
+  {"value_type": "%stemperature", "value": "%.2f"},
+  {"value_type": "%shumidity", "value": "%.2f"},
+  {"value_type": "%spressure", "value": "%.2f"}
+ ]
+}
+)=====";
+
 static String http_software_version;
 static unsigned int lora_software_version;
 static String chipID;
@@ -129,100 +155,30 @@ int send_http(HttpsClient *client, String body) {
 }
 
 int send_http_geiger(HttpsClient *client, const char *host, unsigned int timediff, unsigned int hv_pulses,
-                     unsigned int gm_counts, unsigned int cpm, int xpin) {
+                     unsigned int gm_counts, unsigned int cpm, int xpin, const char *prefix) {
   char body[1000];
   prepare_http(client, host);
-  if (xpin != XPIN_NO_XPIN) {
+  if (xpin != XPIN_NO_XPIN)
     client->hc->addHeader("X-PIN", String(xpin));
-  }
-  const char *json_format = R"=====(
-{
- "software_version": "%s",
- "sensordatavalues": [
-  {"value_type": "counts_per_minute", "value": "%d"},
-  {"value_type": "hv_pulses", "value": "%d"},
-  {"value_type": "counts", "value": "%d"},
-  {"value_type": "sample_time_ms", "value": "%d"}
- ]
-}
-)=====";
-  snprintf(body, 1000, json_format,
+  snprintf(body, 1000, json_format_radiation,
            http_software_version.c_str(),
-           cpm,
-           hv_pulses,
-           gm_counts,
-           timediff);
+           prefix, cpm,
+           prefix, hv_pulses,
+           prefix, gm_counts,
+           prefix, timediff);
   return send_http(client, body);
 }
 
-int send_http_thp(HttpsClient *client, const char *host, float temperature, float humidity, float pressure, int xpin) {
+int send_http_thp(HttpsClient *client, const char *host, float temperature, float humidity, float pressure, int xpin, const char *prefix) {
   char body[1000];
   prepare_http(client, host);
-  if (xpin != XPIN_NO_XPIN) {
+  if (xpin != XPIN_NO_XPIN)
     client->hc->addHeader("X-PIN", String(xpin));
-  }
-  const char *json_format = R"=====(
-{
- "software_version": "%s",
- "sensordatavalues": [
-  {"value_type": "temperature", "value": "%.2f"},
-  {"value_type": "humidity", "value": "%.2f"},
-  {"value_type": "pressure", "value": "%.2f"}
- ]
-}
-)=====";
-  snprintf(body, 1000, json_format,
+  snprintf(body, 1000, json_format_thp,
            http_software_version.c_str(),
-           temperature,
-           humidity,
-           pressure);
-  return send_http(client, body);
-}
-
-// two extra functions for MADAVI, because MADAVI needs the sensorname in value_type to recognize the sensors
-int send_http_geiger_2_madavi(HttpsClient *client, String tube_type, unsigned int timediff, unsigned int hv_pulses,
-                               unsigned int gm_counts, unsigned int cpm) {
-  char body[1000];
-  prepare_http(client, MADAVI);
-  tube_type = tube_type.substring(10);
-  const char *json_format = R"=====(
-{
- "software_version": "%s",
- "sensordatavalues": [
-  {"value_type": "%s_counts_per_minute", "value": "%d"},
-  {"value_type": "%s_hv_pulses", "value": "%d"},
-  {"value_type": "%s_counts", "value": "%d"},
-  {"value_type": "%s_sample_time_ms", "value": "%d"}
- ]
-}
-)=====";
-  snprintf(body, 1000, json_format,
-           http_software_version.c_str(),
-           tube_type.c_str(), cpm,
-           tube_type.c_str(), hv_pulses,
-           tube_type.c_str(), gm_counts,
-           tube_type.c_str(), timediff);
-  return send_http(client, body);
-}
-
-int send_http_thp_2_madavi(HttpsClient *client, float temperature, float humidity, float pressure) {
-  char body[1000];
-  prepare_http(client, MADAVI);
-  const char *json_format = R"=====(
-{
- "software_version": "%s",
- "sensordatavalues": [
-  {"value_type": "BME280_temperature", "value": "%.2f"},
-  {"value_type": "BME280_humidity", "value": "%.2f"},
-  {"value_type": "BME280_pressure", "value": "%.2f"}
- ]
-}
-)=====";
-  snprintf(body, 1000, json_format,
-           http_software_version.c_str(),
-           temperature,
-           humidity,
-           pressure);
+           prefix, temperature,
+           prefix, humidity,
+           prefix, pressure);
   return send_http(client, body);
 }
 
@@ -260,45 +216,54 @@ int send_ttn_thp(float temperature, float humidity, float pressure) {
   return lorawan_send(2, ttnData, 5, false, NULL, NULL, NULL);
 }
 
-void transmit_data(String tube_type, int tube_nbr, unsigned int dt, unsigned int hv_pulses, unsigned int gm_counts, unsigned int cpm,
+// Send data to web servers for sensor data with predefined interval of MEASUREMENT, default 150 s / 2.5 min. No alarm handling.
+void transmit_data_to_web(int tube_nbr, unsigned int dt, unsigned int hv_pulses, unsigned int gm_counts, unsigned int cpm,
                    int have_thp, float temperature, float humidity, float pressure, int wifi_status) {
+  if (wifi_status != ST_WIFI_CONNECTED)
+    return;
+
   int rc1, rc2;
 
   #if SEND2CUSTOMSRV
   bool customsrv_ok;
   log(INFO, "Sending to CUSTOMSRV ...");
-  rc1 = send_http_geiger(&c_customsrv, CUSTOMSRV, dt, hv_pulses, gm_counts, cpm, XPIN_NO_XPIN);
-  rc2 = have_thp ? send_http_thp(&c_customsrv, CUSTOMSRV, temperature, humidity, pressure, XPIN_NO_XPIN) : 200;
+  rc1 = send_http_geiger(&c_customsrv, CUSTOMSRV, dt, hv_pulses, gm_counts, cpm, XPIN_NO_XPIN, "");
+  rc2 = have_thp ? send_http_thp(&c_customsrv, CUSTOMSRV, temperature, humidity, pressure, XPIN_NO_XPIN, "") : 200;
   customsrv_ok = (rc1 == 200) && (rc2 == 200);
   log(INFO, "Sent to CUSTOMSRV, status: %s, http: %d %d", customsrv_ok ? "ok" : "error", rc1, rc2);
   #endif
 
-  if (sendToMadavi && (wifi_status == ST_WIFI_CONNECTED)) {
+  if (sendToMadavi) {
     bool madavi_ok;
     log(INFO, "Sending to Madavi ...");
     set_status(STATUS_MADAVI, ST_MADAVI_SENDING);
-    rc1 = send_http_geiger_2_madavi(&c_madavi, tube_type, dt, hv_pulses, gm_counts, cpm);
-    rc2 = have_thp ? send_http_thp_2_madavi(&c_madavi, temperature, humidity, pressure) : 200;
+    rc1 = send_http_geiger(&c_madavi, MADAVI, dt, hv_pulses, gm_counts, cpm, XPIN_NO_XPIN, MADAVI_PREFIX_GEIGER);
+    rc2 = have_thp ? send_http_thp(&c_madavi, MADAVI, temperature, humidity, pressure, XPIN_NO_XPIN, MADAVI_PREFIX_THP) : 200;
     delay(300);
     madavi_ok = (rc1 == 200) && (rc2 == 200);
     log(INFO, "Sent to Madavi, status: %s, http: %d %d", madavi_ok ? "ok" : "error", rc1, rc2);
     set_status(STATUS_MADAVI, madavi_ok ? ST_MADAVI_IDLE : ST_MADAVI_ERROR);
   }
 
-  if (sendToCommunity  && (wifi_status == ST_WIFI_CONNECTED)) {
+  if (sendToCommunity) {
     bool scomm_ok;
     log(INFO, "Sending to sensor.community ...");
     set_status(STATUS_SCOMM, ST_SCOMM_SENDING);
-    rc1 = send_http_geiger(&c_sensorc, SENSORCOMMUNITY, dt, hv_pulses, gm_counts, cpm, XPIN_RADIATION);
-    rc2 = have_thp ? send_http_thp(&c_sensorc, SENSORCOMMUNITY, temperature, humidity, pressure, XPIN_BME280) : 201;
+    rc1 = send_http_geiger(&c_sensorc, SENSORCOMMUNITY, dt, hv_pulses, gm_counts, cpm, XPIN_RADIATION, "");
+    rc2 = have_thp ? send_http_thp(&c_sensorc, SENSORCOMMUNITY, temperature, humidity, pressure, XPIN_BME280, "") : 201;
     delay(300);
     scomm_ok = (rc1 == 201) && (rc2 == 201);
     log(INFO, "Sent to sensor.community, status: %s, http: %d %d", scomm_ok ? "ok" : "error", rc1, rc2);
     set_status(STATUS_SCOMM, scomm_ok ? ST_SCOMM_IDLE : ST_SCOMM_ERROR);
   }
+}
 
+// Send data via LoRaWAN to The Things Network servers with predefined interval of MEASUREMENT, default 150 s / 2.5 min. No alarm handling.
+void transmit_data_to_ttn(int tube_nbr, unsigned int dt, unsigned int hv_pulses, unsigned int gm_counts, unsigned int cpm,
+                   int have_thp, float temperature, float humidity, float pressure) {
   if (isLoraBoard && sendToLora && (strcmp(appeui, "") != 0)) {    // send only, if we have LoRa credentials
     bool ttn_ok;
+    int rc1, rc2;
     log(INFO, "Sending to TTN ...");
     set_status(STATUS_TTN, ST_TTN_SENDING);
     rc1 = send_ttn_geiger(tube_nbr, dt, gm_counts);
@@ -306,10 +271,10 @@ void transmit_data(String tube_type, int tube_nbr, unsigned int dt, unsigned int
     ttn_ok = (rc1 == TX_STATUS_UPLINK_SUCCESS) && (rc2 == TX_STATUS_UPLINK_SUCCESS);
     set_status(STATUS_TTN, ttn_ok ? ST_TTN_IDLE : ST_TTN_ERROR);
   }
-
 }
 
-void transmit_userinfo(String tube_type, int tube_nbr, float tube_factor, unsigned int cpm, unsigned int accu_cpm, float accu_rate,
+// Send data to user with interval configurable via Web Config, incl. alarm handling.
+void transmit_data_to_telegram(int tube_nbr, float tube_factor, unsigned int cpm, unsigned int accu_cpm, float accu_rate,
                    int have_thp, float temperature, float humidity, float pressure, int wifi_status, bool alarm_status) {
 
   if (wifi_status != ST_WIFI_CONNECTED)

@@ -63,12 +63,12 @@ const char *json_format_thp = R"=====(
 const char *json_format_radiation_mqtt = R"=====(
 {
  "version": "%s",
- "tube": "%d",
+ "type": "%d",
  "data": [
   {"cpm": "%d"},
-  {"accu_cpm": "%.1f"},
-  {"rate": "%.1f"},
-  {"accu_rate": "%.1f"},
+  {"accu_cpm": "%d"},
+  {"rate_nSv-h": "%.1f"},
+  {"accu_rate_nSv-h": "%.1f"}
  ]
 }
 )=====";
@@ -165,7 +165,7 @@ void setup_transmission(const char *version, char *ssid, bool loraHardware) {
 
 void mqtt_callback(char* topic, byte *payload, unsigned int length) {
     char rx_buffer[length+1];
-    log(INFO, "MQTT msg!");
+    log(INFO, "MQTT incoming msg!");
     memcpy(rx_buffer, (char *)payload, length);
     rx_buffer[length] = '\0';
     log(INFO, "MQTT msg on channel %s: %s", topic, rx_buffer);
@@ -187,7 +187,7 @@ void poll_transmission(int wifi_status) {
       if (millis() - last_mqtt_reconnect > MQTT_RECONNECT_ATTEMPT_INTERVAL) {
         log(INFO, "MQTT Reconnect");
         last_mqtt_reconnect = millis();
-        if (mqtt_client->connect(chipID.c_str()))
+        if (mqtt_client->connect(chipID.c_str(), mqttUsername, mqttPassword))
           set_status(STATUS_MQTT, ST_MQTT_IDLE);
         else
           set_status(STATUS_MQTT, ST_MQTT_ERROR);
@@ -407,20 +407,27 @@ void transmit_data_to_mqtt(int tube_nbr, float tube_factor, unsigned int cpm, un
   if (!mqtt_client->connected())
     return;
 
-  char mqtt_topic[100];
+  String mqtt_topic;
   char mqtt_payload[1000];
   bool mqtt_ok;
 
-  log(INFO, "Sending to MQTT server");
+  mqtt_topic = mqttChannelPrefix;
+  mqtt_topic.trim();
+  if (mqtt_topic[0] == '/')
+    mqtt_topic.remove(0, 1);
+  if (!mqtt_topic.endsWith("/"))
+    mqtt_topic += '/';
+  mqtt_topic = mqtt_topic + chipID + '/';
+  log(INFO, "Sending to MQTT server on %s", mqtt_topic.c_str());
   set_status(STATUS_MQTT, ST_MQTT_SENDING);
   snprintf(mqtt_payload, 1000, json_format_radiation_mqtt,
            http_software_version.c_str(),
            tube_nbr,
            cpm,
-           accu_cpm*60,
+           accu_cpm,
            cpm*tube_factor*1000/60,
            accu_rate*1000);
-  mqtt_ok = mqtt_client->publish("radiation", mqtt_payload);
+  mqtt_ok = mqtt_client->publish(String(mqtt_topic + "radiation").c_str(), mqtt_payload);
 
   if (mqtt_ok && have_thp) {
     snprintf(mqtt_payload, 1000, json_format_thp_mqtt,
@@ -429,7 +436,7 @@ void transmit_data_to_mqtt(int tube_nbr, float tube_factor, unsigned int cpm, un
             temperature,
             humidity,
             pressure);
-    mqtt_ok = mqtt_client->publish("environmental", mqtt_payload);
+    mqtt_ok = mqtt_client->publish(String(mqtt_topic + "environmental").c_str(), mqtt_payload);
   }
 
   log(INFO, "Sent to MQTT broker, status: %s", mqtt_ok ? "ok" : "error");

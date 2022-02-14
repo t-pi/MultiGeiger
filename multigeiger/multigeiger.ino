@@ -253,7 +253,7 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
         if (sendDataToMessengerEvery > 0) {
           log(DEBUG, "Sending data to Telegram messenger");
           transmit_data_to_telegram(tubes[TUBE_TYPE].nbr, tubes[TUBE_TYPE].cps_to_uSvph,
-                                    current_cpm, accumulated_count_rate, accumulated_dose_rate,
+                                    current_cpm, (unsigned int)(accumulated_count_rate * 60), accumulated_dose_rate,
                                     have_thp, temperature, humidity, pressure, wifi_status, false);
         }
         break;
@@ -261,7 +261,7 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
         if (sendDataToMqttEvery > 0) {
           log(DEBUG, "Sending to MQTT");
           transmit_data_to_mqtt(tubes[TUBE_TYPE].nbr, tubes[TUBE_TYPE].cps_to_uSvph,
-                                current_cpm, accumulated_count_rate, accumulated_dose_rate,
+                                current_cpm, (unsigned int)(accumulated_count_rate * 60), accumulated_dose_rate,
                                 have_thp, temperature, humidity, pressure, wifi_status, false);
         }
         break;

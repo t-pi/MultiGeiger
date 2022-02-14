@@ -107,6 +107,9 @@
 #define SEND_LOCAL_ALARM_TO_MESSENGER false
 
 // To communicate with MQTT broker, please provide server address and credentials via Web Config
+// MQTT channel/topic prefix can be defined in Web Config. Final channels/topics are
+//   '<prefix>/esp232-<###>/radiation' for radiation data (cpm, accumulated cpm, rate, accumulated rate in nSv/h)
+//   '<prefix>/esp232-<###>/environmental' for environmental data if installed (temperature, rel. humidity, air pressure)
 // 3600 = 1/hour, 86400 = 1/day, 604800 = 1/week, ...
 // Set to 0 to disable normal data transfer
 #define SEND_DATA_TO_MQTT_EVERY 0

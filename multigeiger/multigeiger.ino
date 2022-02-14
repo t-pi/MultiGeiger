@@ -129,9 +129,10 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
   const byte MEASUREMENT = 1;
   const byte ONE_MINUTE = 2;
   const byte TELEGRAM_DATA = 3;
+  const byte MQTT_DATA = 4;
 
   // 2. adjust the total number of events resp. saved states
-  const int savedstates_count = 4;
+  const int savedstates_count = 5;
 
   // 3. add interval in ms to the end of interval array - 4. see below
   static GM_State saved_state[savedstates_count];
@@ -139,7 +140,8 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
     HEARTBEAT_INTERVAL * 1000,  // Basic heartbeat interval
     MEASUREMENT_INTERVAL * 1000,  // Send measurements to server interval
     60 * 1000,  // 60 sec for ONE_MINUTE log
-    sendDataToMessengerEvery * 1000  // Send to Telegram messenger interval (configurable)
+    sendDataToMessengerEvery * 1000,  // Send to Telegram messenger interval (configurable)
+    sendDataToMqttEvery * 1000,  // Send to MQTT interval (configurable)
   };
 
   // millis(), counts or hv_pulses overflow?
@@ -255,6 +257,14 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
                                     have_thp, temperature, humidity, pressure, wifi_status, false);
         }
         break;
+      case MQTT_DATA:
+        if (sendDataToMqttEvery > 0) {
+          log(DEBUG, "Sending to MQTT");
+          transmit_data_to_mqtt(tubes[TUBE_TYPE].nbr, tubes[TUBE_TYPE].cps_to_uSvph,
+                                current_cpm, accumulated_count_rate, accumulated_dose_rate,
+                                have_thp, temperature, humidity, pressure, wifi_status, false);
+        }
+        break;
       default:
         break;
       }
@@ -315,7 +325,7 @@ void loop() {
   }
 
   // do any other periodic updates for LoRaWAN(tm) uplinks
-  poll_transmission();
+  poll_transmission(wifi_status);
 
   long current_loop_duration;
   current_loop_duration = millis() - current_ms;

@@ -6,6 +6,7 @@
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <UniversalTelegramBot.h>
+#include <PubSubClient.h>
 
 #include "log.h"
 #include "display.h"
@@ -38,6 +39,7 @@
 const char *json_format_radiation = R"=====(
 {
  "software_version": "%s",
+ "tube_type": "%d",
  "sensordatavalues": [
   {"value_type": "%scounts_per_minute", "value": "%d"},
   {"value_type": "%shv_pulses", "value": "%d"},
@@ -53,7 +55,32 @@ const char *json_format_thp = R"=====(
  "sensordatavalues": [
   {"value_type": "%stemperature", "value": "%.2f"},
   {"value_type": "%shumidity", "value": "%.2f"},
-  {"value_type": "%spressure", "value": "%.2f"}
+  {"value_type": "%spressure", "value": "%.1f"}
+ ]
+}
+)=====";
+
+const char *json_format_radiation_mqtt = R"=====(
+{
+ "version": "%s",
+ "tube": "%d",
+ "data": [
+  {"cpm": "%d"},
+  {"accu_cpm": "%.1f"},
+  {"rate": "%.1f"},
+  {"accu_rate": "%.1f"},
+ ]
+}
+)=====";
+
+const char *json_format_thp_mqtt = R"=====(
+{
+ "version": "%s",
+ "type": "%d",
+ "data": [
+  {"temperature": "%.2f"},
+  {"humidity": "%.2f"},
+  {"pressure": "%.1f"}
  ]
 }
 )=====";
@@ -69,7 +96,12 @@ typedef struct https_client {
 } HttpsClient;
 
 static HttpsClient c_madavi, c_sensorc, c_customsrv, c_telegram;
+static WiFiClient c_mqtt;
 UniversalTelegramBot *telegram_bot;
+PubSubClient *mqtt_client;
+void mqtt_callback(char* topic, byte *payload, unsigned int length);
+
+#define MQTT_RECONNECT_ATTEMPT_INTERVAL 30000  // ms
 
 void setup_transmission(const char *version, char *ssid, bool loraHardware) {
   chipID = String(ssid);
@@ -97,6 +129,19 @@ void setup_transmission(const char *version, char *ssid, bool loraHardware) {
   c_customsrv.wc->setCACert(ca_certs);
   c_customsrv.hc = new HTTPClient;
 
+  mqtt_client = new PubSubClient(c_mqtt);
+
+  if (strlen(mqttServer) < 5) {
+    sendDataToMqttEvery = 0;
+    sendLocalAlarmToMqtt = false;
+    set_status(STATUS_MQTT, ST_MQTT_OFF);
+  } else {
+    log(DEBUG, "Starting MQTT client...");
+    mqtt_client->setServer(mqttServer, mqttPort);
+    mqtt_client->setCallback(mqtt_callback);
+    set_status(STATUS_MQTT, ST_MQTT_INIT);
+  }
+
   c_telegram.wc = new WiFiClientSecure;
   c_telegram.wc->setCACert(TELEGRAM_CERTIFICATE_ROOT);
   c_telegram.hc = new HTTPClient;
@@ -114,15 +159,40 @@ void setup_transmission(const char *version, char *ssid, bool loraHardware) {
   set_status(STATUS_SCOMM, sendToCommunity ? ST_SCOMM_INIT : ST_SCOMM_OFF);
   set_status(STATUS_MADAVI, sendToMadavi ? ST_MADAVI_INIT : ST_MADAVI_OFF);
   set_status(STATUS_TTN, sendToLora ? ST_TTN_INIT : ST_TTN_OFF);
+  set_status(STATUS_MQTT, ((sendDataToMqttEvery != 0) || sendLocalAlarmToMqtt) ? ST_MQTT_INIT : ST_MQTT_OFF);
+  set_status(STATUS_TELEGRAM, ((sendDataToMessengerEvery != 0) || sendLocalAlarmToMessenger) ? ST_TELEGRAM_INIT : ST_TELEGRAM_OFF);
 }
 
-void poll_transmission() {
+void mqtt_callback(char* topic, byte *payload, unsigned int length) {
+    char rx_buffer[length+1];
+    log(INFO, "MQTT msg!");
+    memcpy(rx_buffer, (char *)payload, length);
+    rx_buffer[length] = '\0';
+    log(INFO, "MQTT msg on channel %s: %s", topic, rx_buffer);
+}
+
+void poll_transmission(int wifi_status) {
+  static long last_mqtt_reconnect = 0;
   if (isLoraBoard) {
     // The LMIC needs to be polled a lot; and this is very low cost if the LMIC isn't
     // active. So we just act as a bridge. We need this routine so we can see
     // `isLoraBoard`. Most C compilers will notice the tail call and optimize this
     // to a jump.
     poll_lorawan();
+  }
+  if (get_status(STATUS_MQTT) != ST_MQTT_OFF) {
+    if (mqtt_client->connected()) {
+      mqtt_client->loop();
+    } else if (wifi_status == ST_WIFI_CONNECTED) {
+      if (millis() - last_mqtt_reconnect > MQTT_RECONNECT_ATTEMPT_INTERVAL) {
+        log(INFO, "MQTT Reconnect");
+        last_mqtt_reconnect = millis();
+        if (mqtt_client->connect(chipID.c_str()))
+          set_status(STATUS_MQTT, ST_MQTT_IDLE);
+        else
+          set_status(STATUS_MQTT, ST_MQTT_ERROR);
+      }
+    }
   }
 }
 
@@ -154,7 +224,7 @@ int send_http(HttpsClient *client, String body) {
   return httpResponseCode;
 }
 
-int send_http_geiger(HttpsClient *client, const char *host, unsigned int timediff, unsigned int hv_pulses,
+int send_http_geiger(HttpsClient *client, const char *host, int tube_nbr, unsigned int timediff, unsigned int hv_pulses,
                      unsigned int gm_counts, unsigned int cpm, int xpin, const char *prefix) {
   char body[1000];
   prepare_http(client, host);
@@ -162,6 +232,7 @@ int send_http_geiger(HttpsClient *client, const char *host, unsigned int timedif
     client->hc->addHeader("X-PIN", String(xpin));
   snprintf(body, 1000, json_format_radiation,
            http_software_version.c_str(),
+           tube_nbr,
            prefix, cpm,
            prefix, hv_pulses,
            prefix, gm_counts,
@@ -237,7 +308,7 @@ void transmit_data_to_web(int tube_nbr, unsigned int dt, unsigned int hv_pulses,
     bool madavi_ok;
     log(INFO, "Sending to Madavi ...");
     set_status(STATUS_MADAVI, ST_MADAVI_SENDING);
-    rc1 = send_http_geiger(&c_madavi, MADAVI, dt, hv_pulses, gm_counts, cpm, XPIN_NO_XPIN, MADAVI_PREFIX_GEIGER);
+    rc1 = send_http_geiger(&c_madavi, MADAVI, tube_nbr, dt, hv_pulses, gm_counts, cpm, XPIN_NO_XPIN, MADAVI_PREFIX_GEIGER);
     rc2 = have_thp ? send_http_thp(&c_madavi, MADAVI, temperature, humidity, pressure, XPIN_NO_XPIN, MADAVI_PREFIX_THP) : 200;
     delay(300);
     madavi_ok = (rc1 == 200) && (rc2 == 200);
@@ -249,7 +320,7 @@ void transmit_data_to_web(int tube_nbr, unsigned int dt, unsigned int hv_pulses,
     bool scomm_ok;
     log(INFO, "Sending to sensor.community ...");
     set_status(STATUS_SCOMM, ST_SCOMM_SENDING);
-    rc1 = send_http_geiger(&c_sensorc, SENSORCOMMUNITY, dt, hv_pulses, gm_counts, cpm, XPIN_RADIATION, "");
+    rc1 = send_http_geiger(&c_sensorc, SENSORCOMMUNITY, tube_nbr, dt, hv_pulses, gm_counts, cpm, XPIN_RADIATION, "");
     rc2 = have_thp ? send_http_thp(&c_sensorc, SENSORCOMMUNITY, temperature, humidity, pressure, XPIN_BME280, "") : 201;
     delay(300);
     scomm_ok = (rc1 == 201) && (rc2 == 201);
@@ -290,12 +361,10 @@ void transmit_data_to_telegram(int tube_nbr, float tube_factor, unsigned int cpm
     return;
   }
 
-  char localEspId[16];
   char thp_text[60];
   bool telegram_ok;
   char message[120];
 
-  chipID.toCharArray(localEspId, sizeof(localEspId));
   if (have_thp) {
     sprintf(thp_text, "\nBME data: %.1fC %.1f%% %.1fhPa", temperature, humidity, pressure/100);
   }
@@ -304,17 +373,65 @@ void transmit_data_to_telegram(int tube_nbr, float tube_factor, unsigned int cpm
   set_status(STATUS_TELEGRAM, ST_TELEGRAM_SENDING);
   if (alarm_status) {
     if (tube_nbr > 0)
-      sprintf(message, "<b>--- MULTIGEIGER ALERT ! ---</b>\n<code>%s</code> rate too high:\n%.2f nSv/h (accumulated: %.2f nSv/h)", localEspId, cpm*tube_factor*1000/60, accu_rate*1000);
+      sprintf(message, "<b>--- MULTIGEIGER ALERT ! ---</b>\n<code>%s</code> rate too high:\n%.2f nSv/h (accumulated: %.2f nSv/h)", chipID.c_str(), cpm*tube_factor*1000/60, accu_rate*1000);
     else
-      sprintf(message, "<b>--- MULTIGEIGER ALERT ! ---</b>\n<code>%s</code> rate too high:\n%d (accumulated: %d)", localEspId, cpm, accu_cpm);
+      sprintf(message, "<b>--- MULTIGEIGER ALERT ! ---</b>\n<code>%s</code> rate too high:\n%d (accumulated: %d)", chipID.c_str(), cpm, accu_cpm);
   } else {
     if (tube_nbr > 0)
-      sprintf(message, "MultiGeiger <code>%s</code> rates:\n%.2f nSv/h (accumulated: %.2f nSv/h)%s", localEspId, cpm*tube_factor*1000/60, accu_rate*1000, have_thp ? thp_text : "");
+      sprintf(message, "MultiGeiger <code>%s</code> rates:\n%.2f nSv/h (accumulated: %.2f nSv/h)%s", chipID.c_str(), cpm*tube_factor*1000/60, accu_rate*1000, have_thp ? thp_text : "");
     else
-      sprintf(message, "MultiGeiger <code>%s</code> CPM:\n%d (accumulated: %d)%s", localEspId, cpm, accu_cpm, have_thp ? thp_text : "");
+      sprintf(message, "MultiGeiger <code>%s</code> CPM:\n%d (accumulated: %d)%s", chipID.c_str(), cpm, accu_cpm, have_thp ? thp_text : "");
   }
   telegram_ok = telegram_bot->sendMessage(telegramChatId, message, "HTML", 0);
   log(INFO, "Sent to Telegram messenger, status: %s", telegram_ok ? "ok" : "error");
   set_status(STATUS_TELEGRAM, telegram_ok ? ST_TELEGRAM_IDLE : ST_TELEGRAM_ERROR);
 }
 
+// Send data to user with interval configurable via Web Config, incl. alarm handling.
+void transmit_data_to_mqtt(int tube_nbr, float tube_factor, unsigned int cpm, unsigned int accu_cpm, float accu_rate,
+                   int have_thp, float temperature, float humidity, float pressure, int wifi_status, bool alarm_status) {
+
+  if (wifi_status != ST_WIFI_CONNECTED)
+    return;
+
+  if (get_status(STATUS_MQTT) == ST_MQTT_OFF)
+    return;
+
+  if (strlen(mqttServer) < 5) {
+    sendDataToMqttEvery = 0;
+    sendLocalAlarmToMqtt = false;
+    set_status(STATUS_MQTT, ST_MQTT_OFF);
+    return;
+  }
+
+  if (!mqtt_client->connected())
+    return;
+
+  char mqtt_topic[100];
+  char mqtt_payload[1000];
+  bool mqtt_ok;
+
+  log(INFO, "Sending to MQTT server");
+  set_status(STATUS_MQTT, ST_MQTT_SENDING);
+  snprintf(mqtt_payload, 1000, json_format_radiation_mqtt,
+           http_software_version.c_str(),
+           tube_nbr,
+           cpm,
+           accu_cpm*60,
+           cpm*tube_factor*1000/60,
+           accu_rate*1000);
+  mqtt_ok = mqtt_client->publish("radiation", mqtt_payload);
+
+  if (mqtt_ok && have_thp) {
+    snprintf(mqtt_payload, 1000, json_format_thp_mqtt,
+            http_software_version.c_str(),
+            280,
+            temperature,
+            humidity,
+            pressure);
+    mqtt_ok = mqtt_client->publish("environmental", mqtt_payload);
+  }
+
+  log(INFO, "Sent to MQTT broker, status: %s", mqtt_ok ? "ok" : "error");
+  set_status(STATUS_MQTT, mqtt_ok ? ST_MQTT_IDLE : ST_MQTT_ERROR);
+}

@@ -83,24 +83,36 @@
 // ! Requires a valid tube type to be set in order to calculate dose rate.
 #define LOCAL_ALARM_FACTOR 3  // current / accumulated dose rate
 
+///// TELEGRAM MESSENGER
 // Send MultiGeiger info and alerts to Messaging services. Currently supported:
 // - Telegram Messenger
+// - MQTT
 // REQUIRES WIFI CONNECTION!
-// Update via Messenger every N sensor.community messages (default 150 s / 2.5 min).
-// Set to 0 to disable normal data transfer.
-// 24 = 1/hour, 576 = 1/day, 4032 = 1/week, max: 27719 (~48 days)
-#define SEND_DATA_TO_MESSENGER_EVERY 0
 
-// Send local alerts via supported Messenger services.
-// See above for more info on local alerts.
-#define SEND_LOCAL_ALARM_TO_MESSENGER true
-
-///// TELEGRAM MESSENGER
 // To communicate with the Telegram Messenger on your phone you need to create a bot.
 // Starting point: https://core.telegram.org/bots
 // You will get a Bot token, please provide this via Web Config.
 // Form: "XXXXXXXXXX:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-// Important: Start your bot channel with the command "/start" and receive the Chat ID.
 // In order to get MultiGeiger messages to your specific chat, please provide this Chat ID via Web Config.
+// Add the bot to a group together with @RawDataBot, which will print the Chat ID.
+// https://stackoverflow.com/questions/32423837/telegram-bot-how-to-get-a-group-chat-id
 // Form: "123456789"
+// Update via Messenger every SEND_DATA_TO_MESSENGER_EVERY seconds
+// 3600 = 1/hour, 86400 = 1/day, 604800 = 1/week, ...
+// Set to 0 to disable normal data transfer
+#define SEND_DATA_TO_MESSENGER_EVERY 0
+
+// Send local alerts via supported Messenger services.
+// See above for more info on local alerts.
+#define SEND_LOCAL_ALARM_TO_MESSENGER false
+
+// To communicate with MQTT broker, please provide server address and credentials via Web Config
+// 3600 = 1/hour, 86400 = 1/day, 604800 = 1/week, ...
+// Set to 0 to disable normal data transfer
+#define SEND_DATA_TO_MQTT_EVERY 0
+
+// Send local alerts via supported Messenger services.
+// See above for more info on local alerts.
+#define SEND_LOCAL_ALARM_TO_MQTT false
+
 

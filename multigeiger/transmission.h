@@ -21,8 +21,12 @@ void transmit_data_to_ttn(int tube_nbr, unsigned int dt, unsigned int hv_pulses,
                    int have_thp, float temperature, float humidity, float pressure);
 void transmit_data_to_telegram(int tube_nbr, float tube_factor, unsigned int cpm, unsigned int accu_cpm, float accu_rate,
                        int have_thp, float temperature, float humidity, float pressure, int wifi_status, bool alarm_status);
+void transmit_data_to_mqtt(int tube_nbr, float tube_factor, unsigned int cpm, unsigned int accu_cpm, float accu_rate,
+                       int have_thp, float temperature, float humidity, float pressure, int wifi_status, bool alarm_status);
 
-// The Arduino LMIC wants to be polled from loop(). This takes care of that on LoRa boards.
-void poll_transmission(void);
+// Periodic keep-alive functions for transmissions:
+// - On Lora boards, the Arduino LMIC wants to be polled from loop().
+// - MQTT, if active, requires a periodic keep-alive
+void poll_transmission(int wifi_status);
 
 #endif // _TRANSMISSION_H_

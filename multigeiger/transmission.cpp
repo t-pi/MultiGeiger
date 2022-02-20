@@ -39,7 +39,7 @@
 const char *json_format_radiation = R"=====(
 {
  "software_version": "%s",
- "tube_type": "%d",
+ "tube_type": "%s",
  "sensordatavalues": [
   {"value_type": "%scounts_per_minute", "value": "%d"},
   {"value_type": "%shv_pulses", "value": "%d"},
@@ -63,7 +63,7 @@ const char *json_format_thp = R"=====(
 const char *json_format_radiation_mqtt = R"=====(
 {
  "version": "%s",
- "type": "%d",
+ "tube_type": "%s",
  "data": [
   {"cpm": "%d"},
   {"accu_cpm": "%d"},
@@ -75,8 +75,7 @@ const char *json_format_radiation_mqtt = R"=====(
 
 const char *json_format_thp_mqtt = R"=====(
 {
- "version": "%s",
- "type": "%d",
+ "sensor_type": "%s",
  "data": [
   {"temperature": "%.2f"},
   {"humidity": "%.2f"},
@@ -224,7 +223,7 @@ int send_http(HttpsClient *client, String body) {
   return httpResponseCode;
 }
 
-int send_http_geiger(HttpsClient *client, const char *host, int tube_nbr, unsigned int timediff, unsigned int hv_pulses,
+int send_http_geiger(HttpsClient *client, const char *host, const char *tube_type, int tube_nbr, unsigned int timediff, unsigned int hv_pulses,
                      unsigned int gm_counts, unsigned int cpm, int xpin, const char *prefix) {
   char body[1000];
   prepare_http(client, host);
@@ -232,7 +231,7 @@ int send_http_geiger(HttpsClient *client, const char *host, int tube_nbr, unsign
     client->hc->addHeader("X-PIN", String(xpin));
   snprintf(body, 1000, json_format_radiation,
            http_software_version.c_str(),
-           tube_nbr,
+           tube_type,
            prefix, cpm,
            prefix, hv_pulses,
            prefix, gm_counts,
@@ -288,7 +287,7 @@ int send_ttn_thp(float temperature, float humidity, float pressure) {
 }
 
 // Send data to web servers for sensor data with predefined interval of MEASUREMENT, default 150 s / 2.5 min. No alarm handling.
-void transmit_data_to_web(int tube_nbr, unsigned int dt, unsigned int hv_pulses, unsigned int gm_counts, unsigned int cpm,
+void transmit_data_to_web(const char *tube_type, int tube_nbr, unsigned int dt, unsigned int hv_pulses, unsigned int gm_counts, unsigned int cpm,
                    int have_thp, float temperature, float humidity, float pressure, int wifi_status) {
   if (wifi_status != ST_WIFI_CONNECTED)
     return;
@@ -308,7 +307,7 @@ void transmit_data_to_web(int tube_nbr, unsigned int dt, unsigned int hv_pulses,
     bool madavi_ok;
     log(INFO, "Sending to Madavi ...");
     set_status(STATUS_MADAVI, ST_MADAVI_SENDING);
-    rc1 = send_http_geiger(&c_madavi, MADAVI, tube_nbr, dt, hv_pulses, gm_counts, cpm, XPIN_NO_XPIN, MADAVI_PREFIX_GEIGER);
+    rc1 = send_http_geiger(&c_madavi, MADAVI, tube_type, tube_nbr, dt, hv_pulses, gm_counts, cpm, XPIN_NO_XPIN, MADAVI_PREFIX_GEIGER);
     rc2 = have_thp ? send_http_thp(&c_madavi, MADAVI, temperature, humidity, pressure, XPIN_NO_XPIN, MADAVI_PREFIX_THP) : 200;
     delay(300);
     madavi_ok = (rc1 == 200) && (rc2 == 200);
@@ -320,7 +319,7 @@ void transmit_data_to_web(int tube_nbr, unsigned int dt, unsigned int hv_pulses,
     bool scomm_ok;
     log(INFO, "Sending to sensor.community ...");
     set_status(STATUS_SCOMM, ST_SCOMM_SENDING);
-    rc1 = send_http_geiger(&c_sensorc, SENSORCOMMUNITY, tube_nbr, dt, hv_pulses, gm_counts, cpm, XPIN_RADIATION, "");
+    rc1 = send_http_geiger(&c_sensorc, SENSORCOMMUNITY, tube_type, tube_nbr, dt, hv_pulses, gm_counts, cpm, XPIN_RADIATION, "");
     rc2 = have_thp ? send_http_thp(&c_sensorc, SENSORCOMMUNITY, temperature, humidity, pressure, XPIN_BME280, "") : 201;
     delay(300);
     scomm_ok = (rc1 == 201) && (rc2 == 201);
@@ -330,7 +329,7 @@ void transmit_data_to_web(int tube_nbr, unsigned int dt, unsigned int hv_pulses,
 }
 
 // Send data via LoRaWAN to The Things Network servers with predefined interval of MEASUREMENT, default 150 s / 2.5 min. No alarm handling.
-void transmit_data_to_ttn(int tube_nbr, unsigned int dt, unsigned int hv_pulses, unsigned int gm_counts, unsigned int cpm,
+void transmit_data_to_ttn(const char *tube_type, int tube_nbr, unsigned int dt, unsigned int hv_pulses, unsigned int gm_counts, unsigned int cpm,
                    int have_thp, float temperature, float humidity, float pressure) {
   if (isLoraBoard && sendToLora && (strcmp(appeui, "") != 0)) {    // send only, if we have LoRa credentials
     bool ttn_ok;
@@ -345,7 +344,7 @@ void transmit_data_to_ttn(int tube_nbr, unsigned int dt, unsigned int hv_pulses,
 }
 
 // Send data to user with interval configurable via Web Config, incl. alarm handling.
-void transmit_data_to_telegram(int tube_nbr, float tube_factor, unsigned int cpm, unsigned int accu_cpm, float accu_rate,
+void transmit_data_to_telegram(const char *tube_type, int tube_nbr, float tube_factor, unsigned int cpm, unsigned int accu_cpm, float accu_rate,
                    int have_thp, float temperature, float humidity, float pressure, int wifi_status, bool alarm_status) {
 
   if (wifi_status != ST_WIFI_CONNECTED)
@@ -388,7 +387,7 @@ void transmit_data_to_telegram(int tube_nbr, float tube_factor, unsigned int cpm
 }
 
 // Send data to user with interval configurable via Web Config, incl. alarm handling.
-void transmit_data_to_mqtt(int tube_nbr, float tube_factor, unsigned int cpm, unsigned int accu_cpm, float accu_rate,
+void transmit_data_to_mqtt(const char *tube_type, int tube_nbr, float tube_factor, unsigned int cpm, unsigned int accu_cpm, float accu_rate,
                    int have_thp, float temperature, float humidity, float pressure, int wifi_status, bool alarm_status) {
 
   if (wifi_status != ST_WIFI_CONNECTED)
@@ -422,7 +421,7 @@ void transmit_data_to_mqtt(int tube_nbr, float tube_factor, unsigned int cpm, un
   set_status(STATUS_MQTT, ST_MQTT_SENDING);
   snprintf(mqtt_payload, 1000, json_format_radiation_mqtt,
            http_software_version.c_str(),
-           tube_nbr,
+           tube_type,
            cpm,
            accu_cpm,
            cpm*tube_factor*1000/60,
@@ -431,8 +430,7 @@ void transmit_data_to_mqtt(int tube_nbr, float tube_factor, unsigned int cpm, un
 
   if (mqtt_ok && have_thp) {
     snprintf(mqtt_payload, 1000, json_format_thp_mqtt,
-            http_software_version.c_str(),
-            280,
+            "bme280",
             temperature,
             humidity,
             pressure);

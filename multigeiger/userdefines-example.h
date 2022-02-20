@@ -83,20 +83,21 @@
 // ! Requires a valid tube type to be set in order to calculate dose rate.
 #define LOCAL_ALARM_FACTOR 3  // current / accumulated dose rate
 
-///// TELEGRAM MESSENGER
+///// MESSAGING
 // Send MultiGeiger info and alerts to Messaging services. Currently supported:
 // - Telegram Messenger
-// - MQTT
+// - MQTT (no HTTPS)
 // REQUIRES WIFI CONNECTION!
 
 // To communicate with the Telegram Messenger on your phone you need to create a bot.
 // Starting point: https://core.telegram.org/bots
 // You will get a Bot token, please provide this via Web Config.
 // Form: "XXXXXXXXXX:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-// In order to get MultiGeiger messages to your specific chat, please provide this Chat ID via Web Config.
-// Add the bot to a group together with @RawDataBot, which will print the Chat ID.
+// In order to get MultiGeiger messages to your specific chat, please provide ChatID via Web Config.
+// Add the bot to a group together with @RawDataBot, which will print the ChatID.
 // https://stackoverflow.com/questions/32423837/telegram-bot-how-to-get-a-group-chat-id
 // Form: "123456789"
+
 // Update via Messenger every SEND_DATA_TO_MESSENGER_EVERY seconds
 // 3600 = 1/hour, 86400 = 1/day, 604800 = 1/week, ...
 // Set to 0 to disable normal data transfer
@@ -110,6 +111,8 @@
 // MQTT channel/topic prefix can be defined in Web Config. Final channels/topics are
 //   '<prefix>/esp232-<###>/radiation' for radiation data (cpm, accumulated cpm, rate, accumulated rate in nSv/h)
 //   '<prefix>/esp232-<###>/environmental' for environmental data if installed (temperature, rel. humidity, air pressure)
+
+// Update via MQTT every SEND_DATA_TO_MQTT_EVERY seconds
 // 3600 = 1/hour, 86400 = 1/day, 604800 = 1/week, ...
 // Set to 0 to disable normal data transfer
 #define SEND_DATA_TO_MQTT_EVERY 0

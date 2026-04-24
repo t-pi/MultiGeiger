@@ -12,7 +12,7 @@ New features:
 
 Fixes:
 
-* fix spurious "Local alarm" after ~49.7 days of uptime: the
+* fix spurious "Local alarm" after ~49.7 days of uptime (PR #1): the
   ``accumulated_time`` counter used by the running average in
   ``process_GMC`` was a 32-bit ``unsigned long`` in milliseconds and
   wrapped at 2^32 ms, which caused ``accumulated_count_rate`` and

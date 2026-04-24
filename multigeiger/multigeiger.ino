@@ -113,7 +113,9 @@ void publish(unsigned long current_ms, unsigned long current_counts, unsigned lo
   static unsigned long last_hv_pulses = 0;
   static unsigned long last_count_timestamp = 0;
   static unsigned int accumulated_GMC_counts = 0;
-  static unsigned long accumulated_time = 0;
+  // 64-bit so this doesn't wrap at 2^32 ms (~49.7 d uptime) and cause a huge
+  // bogus accumulated_Count_Rate / accumulated_Dose_Rate -> spurious local alarm.
+  static uint64_t accumulated_time = 0;
   static float accumulated_Count_Rate = 0.0, accumulated_Dose_Rate = 0.0;
 
   if (((current_counts - last_counts) >= MINCOUNTS) || ((current_ms - last_timestamp) >= DISPLAYREFRESH)) {
@@ -161,7 +163,7 @@ void publish(unsigned long current_ms, unsigned long current_counts, unsigned lo
 
     if (Serial_Print_Mode == Serial_Logging) {
       log_data(counts, dt, Count_Rate, Dose_Rate, hv_pulses,
-               accumulated_GMC_counts, accumulated_time, accumulated_Count_Rate, accumulated_Dose_Rate,
+               accumulated_GMC_counts, (unsigned long)(accumulated_time / 1000), accumulated_Count_Rate, accumulated_Dose_Rate,
                temperature, humidity, pressure);
     }
   } else {

@@ -12,7 +12,15 @@ New features:
 
 Fixes:
 
-* ...
+* fix spurious "Local alarm" after ~49.7 days of uptime: the
+  ``accumulated_time`` counter used by the running average in
+  ``publish`` was a 32-bit ``unsigned long`` in milliseconds and
+  wrapped at 2^32 ms, which caused ``accumulated_Count_Rate`` and
+  ``accumulated_Dose_Rate`` to spike to huge values and trip the local
+  alarm every heartbeat thereafter. Accumulator is now ``uint64_t``
+  (~584 million year range). The serial log ``Accu_Time`` column is
+  now reported in seconds (``unsigned long``) instead of truncated
+  milliseconds, so it no longer goes negative after ~24 days either.
 
 Other changes:
 

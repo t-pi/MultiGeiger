@@ -40,6 +40,23 @@ static bool isLoraBoard;
 float localAlarmThreshold = LOCAL_ALARM_THRESHOLD;
 int localAlarmFactor = (int)LOCAL_ALARM_FACTOR;
 
+long sendDataToMessengerEvery = (long)SEND_DATA_TO_MESSENGER_EVERY;
+bool sendLocalAlarmToMessenger = SEND_LOCAL_ALARM_TO_MESSENGER;
+char telegramBotToken[50] = "";  // "XXXXXXXXXX:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+char telegramChatId[12] = "";  // "1234567890"
+
+char sendLocalAlarmToMessenger_c[CHECKBOX_LEN];
+
+long sendDataToMqttEvery = (long)SEND_DATA_TO_MQTT_EVERY;
+char mqttServer[100] = "";
+int mqttPort = 1883;  // default for MQTT: 1883
+char mqttUsername[30] = "";
+char mqttPassword[30] = "";
+char mqttChannelPrefix[50] = "/multigeiger";
+bool sendLocalAlarmToMqtt = SEND_LOCAL_ALARM_TO_MQTT;
+
+char sendLocalAlarmToMqtt_c[CHECKBOX_LEN];
+
 iotwebconf::ParameterGroup grpMisc = iotwebconf::ParameterGroup("misc", "Misc. Settings");
 iotwebconf::CheckboxParameter startSoundParam = iotwebconf::CheckboxParameter("Start sound", "startSound", playSound_c, CHECKBOX_LEN, playSound);
 iotwebconf::CheckboxParameter speakerTickParam = iotwebconf::CheckboxParameter("Speaker tick", "speakerTick", speakerTick_c, CHECKBOX_LEN, speakerTick);
@@ -57,7 +74,7 @@ iotwebconf::TextParameter deveuiParam = iotwebconf::TextParameter("DEVEUI", "dev
 iotwebconf::TextParameter appeuiParam = iotwebconf::TextParameter("APPEUI", "appeui", appeui, 17);
 iotwebconf::TextParameter appkeyParam = iotwebconf::TextParameter("APPKEY", "appkey", appkey, 33);
 
-iotwebconf::ParameterGroup grpAlarm = iotwebconf::ParameterGroup("alarm", "Local Alarm Setting");
+iotwebconf::ParameterGroup grpAlarm = iotwebconf::ParameterGroup("alarm", "Local Alarm Settings");
 iotwebconf::CheckboxParameter soundLocalAlarmParam = iotwebconf::CheckboxParameter("Enable local alarm sound", "soundLocalAlarm", soundLocalAlarm_c, CHECKBOX_LEN, soundLocalAlarm);
 iotwebconf::FloatTParameter localAlarmThresholdParam =
   iotwebconf::Builder<iotwebconf::FloatTParameter>("localAlarmThreshold").
@@ -70,6 +87,48 @@ iotwebconf::IntTParameter<int16_t> localAlarmFactorParam =
   defaultValue(localAlarmFactor).
   min(2).max(100).
   step(1).placeholder("2..100").build();
+
+iotwebconf::ParameterGroup grpMessenger = iotwebconf::ParameterGroup("messenger", "Messenger Settings");
+iotwebconf::IntTParameter<int32_t> sendDataToMessengerEveryParam =
+  iotwebconf::Builder<iotwebconf::IntTParameter<int32_t>>("sendDataToMessengerEvery").
+  label("Send data via Messenger every n sec\n(0=never,3600=1/h,86400=1/d,604800=1/week)").
+  defaultValue(sendDataToMessengerEvery).
+  min(0).max(31536000).
+  step(1).placeholder("0..31536000").build();
+iotwebconf::CheckboxParameter sendLocalAlarmToMessengerParam = iotwebconf::CheckboxParameter("Send local alarm via Messenger", "sendLocalAlarmToMessenger", sendLocalAlarmToMessenger_c, CHECKBOX_LEN, sendLocalAlarmToMessenger);
+iotwebconf::PasswordParameter telegramBotTokenParam = iotwebconf::PasswordParameter("Telegram Bot Token (Reboot required!)", "telegramBotToken", telegramBotToken, 50);
+iotwebconf::PasswordParameter telegramChatIdParam = iotwebconf::PasswordParameter("Telegram Chat ID", "telegramChatId", telegramChatId, 12);
+
+iotwebconf::ParameterGroup grpMqtt = iotwebconf::ParameterGroup("mqtt", "MQTT Settings");
+iotwebconf::IntTParameter<int32_t> sendDataToMqttEveryParam =
+  iotwebconf::Builder<iotwebconf::IntTParameter<int32_t>>("sendDataToMqttEvery").
+  label("Send data to MQTT every n sec\n(0=never,3600=1/h,86400=1/d,604800=1/week)").
+  defaultValue(sendDataToMqttEvery).
+  min(0).max(31536000).
+  step(1).placeholder("0..31536000").build();
+iotwebconf::CheckboxParameter sendLocalAlarmToMqttParam = iotwebconf::CheckboxParameter("Send local alarm to MQTT", "sendLocalAlarmToMqtt", sendLocalAlarmToMqtt_c, CHECKBOX_LEN, sendLocalAlarmToMqtt);
+iotwebconf::TextTParameter<100> mqttServerParam =
+  iotwebconf::Builder<iotwebconf::TextTParameter<100>>("mqttServer").
+  label("MQTT Server (Reboot required!)").
+  defaultValue(mqttServer).
+  build();
+iotwebconf::UIntTParameter<uint16_t> mqttPortParam =
+  iotwebconf::Builder<iotwebconf::UIntTParameter<uint16_t>>("mqttPort").
+  label("MQTT Server Port (default: 1883)").
+  defaultValue(mqttPort).
+  min(0).max(65535).
+  step(1).placeholder("0..65535").build();
+iotwebconf::TextTParameter<30> mqttUsernameParam =
+  iotwebconf::Builder<iotwebconf::TextTParameter<30>>("mqttUsername").
+  label("Username for Login").
+  defaultValue(mqttUsername).
+  build();
+iotwebconf::PasswordParameter mqttPasswordParam = iotwebconf::PasswordParameter("Password for Login", "mqttPassword", mqttPassword, 30);
+iotwebconf::TextTParameter<50> mqttChannelPrefixParam =
+  iotwebconf::Builder<iotwebconf::TextTParameter<50>>("mqttChannelPrefix").
+  label("MQTT Channel prefix").
+  defaultValue(mqttChannelPrefix).
+  build();
 
 // This only needs to be changed if the layout of the configuration is changed.
 // Appending new variables does not require a new version number here.
@@ -162,11 +221,29 @@ void loadConfigVariables(void) {
   soundLocalAlarm = soundLocalAlarmParam.isChecked();
   localAlarmThreshold = localAlarmThresholdParam.value();
   localAlarmFactor = localAlarmFactorParam.value();
+  sendDataToMessengerEvery = sendDataToMessengerEveryParam.value();
+  sendLocalAlarmToMessenger = sendLocalAlarmToMessengerParam.isChecked();
+  sendDataToMqttEvery = sendDataToMqttEveryParam.value();
+  sendLocalAlarmToMqtt = sendLocalAlarmToMqttParam.isChecked();
+  memcpy(mqttServer, String(mqttServerParam.value()).c_str(), 100);
+  mqttPort = mqttPortParam.value();
+  memcpy(mqttUsername, String(mqttUsernameParam.value()).c_str(), 30);
+  memcpy(mqttChannelPrefix, String(mqttChannelPrefixParam.value()).c_str(), 50);
+  sendLocalAlarmToMqtt = sendLocalAlarmToMqttParam.isChecked();
+
 }
 
 void configSaved(void) {
   log(INFO, "Config saved. ");
   loadConfigVariables();
+  if ((strlen(telegramBotToken) < 40) || (strlen(telegramChatId) < 7)) {
+    sendDataToMessengerEvery = 0;
+    sendLocalAlarmToMessenger = false;
+  }
+  if (strlen(mqttServer) < 5) {
+    sendDataToMqttEvery = 0;
+    sendLocalAlarmToMqtt = false;
+  }
   tick_enable(true);
 }
 
@@ -205,6 +282,21 @@ void setup_webconf(bool loraHardware) {
   grpAlarm.addItem(&localAlarmThresholdParam);
   grpAlarm.addItem(&localAlarmFactorParam);
   iotWebConf.addParameterGroup(&grpAlarm);
+
+  grpMessenger.addItem(&sendDataToMessengerEveryParam);
+  grpMessenger.addItem(&sendLocalAlarmToMessengerParam);
+  grpMessenger.addItem(&telegramBotTokenParam);
+  grpMessenger.addItem(&telegramChatIdParam);
+  iotWebConf.addParameterGroup(&grpMessenger);
+
+  grpMqtt.addItem(&sendDataToMqttEveryParam);
+  grpMqtt.addItem(&sendLocalAlarmToMqttParam);
+  grpMqtt.addItem(&mqttServerParam);
+  grpMqtt.addItem(&mqttPortParam);
+  grpMqtt.addItem(&mqttUsernameParam);
+  grpMqtt.addItem(&mqttPasswordParam);
+  grpMqtt.addItem(&mqttChannelPrefixParam);
+  iotWebConf.addParameterGroup(&grpMqtt);
 
   // if we don't have LoRa hardware, do not send to LoRa
   if (!isLoraBoard)

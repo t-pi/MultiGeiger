@@ -27,7 +27,7 @@ void setup_log_data(int mode) {
 }
 
 void log_data(int GMC_counts, int time_difference, float Count_Rate, float Dose_Rate, int HV_pulse_count,
-              int accumulated_GMC_counts, int accumulated_time, float accumulated_Count_Rate, float accumulated_Dose_Rate,
+              int accumulated_GMC_counts, int accumulated_time, float accumulated_count_rate, float accumulated_dose_rate,
               float t, float h, float p, int iaq) {
   static int counter = 0;
   if (counter++ % 20 == 0) {  // output the header now and then, so table is better readable
@@ -39,7 +39,7 @@ void log_data(int GMC_counts, int time_difference, float Count_Rate, float Dose_
   }
   log(INFO, Serial_Logging_Body,
       GMC_counts, time_difference, Count_Rate, Dose_Rate, HV_pulse_count,
-      accumulated_GMC_counts, accumulated_time, accumulated_Count_Rate, accumulated_Dose_Rate,
+      accumulated_GMC_counts, accumulated_time, accumulated_count_rate, accumulated_dose_rate,
       t, h, p, iaq);
 }
 

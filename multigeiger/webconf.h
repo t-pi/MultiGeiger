@@ -23,6 +23,19 @@ extern char appkey[];
 extern float localAlarmThreshold;
 extern int localAlarmFactor;
 
+extern long sendDataToMessengerEvery;
+extern char telegramBotToken[50];
+extern char telegramChatId[15];
+extern bool sendLocalAlarmToMessenger;
+
+extern long sendDataToMqttEvery;
+extern char mqttServer[100];
+extern int mqttPort;
+extern char mqttUsername[30];
+extern char mqttPassword[30];
+extern char mqttChannelPrefix[50];
+extern bool sendLocalAlarmToMqtt;
+
 extern char ssid[];
 extern IotWebConf iotWebConf;
 

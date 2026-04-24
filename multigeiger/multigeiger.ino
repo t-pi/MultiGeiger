@@ -153,7 +153,9 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
   }
 
   static unsigned int accumulated_GMC_counts = 0;
-  static unsigned long accumulated_time = 0;
+  // 64-bit so this doesn't wrap at 2^32 ms (~49.7 d uptime) and cause a huge
+  // bogus accumulated_count_rate / accumulated_dose_rate -> spurious local alarm.
+  static uint64_t accumulated_time = 0;
 
   // Startup
   if ((gm_count_timestamp == 0) && (saved_state[HEARTBEAT].last_count_timestamp == 0)) {
@@ -189,7 +191,7 @@ void process_GMC(unsigned long current_ms, unsigned long current_counts, unsigne
     // Serial logging
     if (Serial_Print_Mode == Serial_Logging) {
       log_data(counts, dt, count_rate, dose_rate, hv_pulses,
-               accumulated_GMC_counts, accumulated_time, accumulated_count_rate, accumulated_dose_rate,
+               accumulated_GMC_counts, (unsigned long)(accumulated_time / 1000), accumulated_count_rate, accumulated_dose_rate,
                temperature, humidity, pressure, iaq);
     }
 

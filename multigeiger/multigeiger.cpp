@@ -18,6 +18,7 @@
 #include "ble.h"
 #include "chkhardware.h"
 #include "clock.h"
+#include "Wire.h"
 
 // Measurement interval (default 2.5min) [sec]
 #define MEASUREMENT_INTERVAL 150
@@ -37,6 +38,7 @@ static Switches switches;
 float accumulated_count_rate = 0.0, accumulated_dose_rate = 0.0;
 
 void setup() {
+  Wire.begin(SDA, SCL);
   bool isLoraBoard = init_hwtest();
   setup_log(DEFAULT_LOG_LEVEL);
   setup_display(isLoraBoard);

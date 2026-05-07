@@ -7,11 +7,13 @@
 #include "thp_sensor.h"
 
 #include <Adafruit_BME280.h>
+#include <Adafruit_BME680.h>
 /*
  Bosch BSEC Lib, https://github.com/BoschSensortec/BSEC-Arduino-library
  The BSEC software is only available for download or use after accepting the software license agreement.
  By using this library, you have agreed to the terms of the license agreement:
  https://ae-bst.resource.bosch.com/media/_tech/media/bsec/2017-07-17_ClickThrough_License_Terms_Environmentalib_SW_CLEAN.pdf */
+#include <bme68x/bme68x_defs.h>
 #include <bsec.h>
 
 /* Configure the BSEC library with information about the sensor
@@ -33,6 +35,7 @@ const uint8_t bsec_config_iaq[] = {
 };
 
 Adafruit_BME280 bme280;
+Adafruit_BME680 bme680;
 Bsec iaqSensor;  // Create an object of the class Bsec, based on BME680
 bsec_virtual_sensor_t sensorList[10] = {  // Active virtual sensors for BSEC
   BSEC_OUTPUT_RAW_TEMPERATURE,
@@ -61,6 +64,8 @@ const char *get_thp_name() {
     return "no THP sensor";
   case 280:
     return "BME280";
+  case 679:
+    return "BME680_Adafruit";
   case 680:
     return "BME680_BSEC";
   default:
@@ -78,14 +83,19 @@ bool setup_thp_sensor(void) {
 
   // BME680
   if (type_thp == 0) {
-    iaqSensor.begin(BME680_I2C_ADDR_PRIMARY, Wire);
+    iaqSensor.begin(BME68X_I2C_ADDR_HIGH, Wire);
     if (checkIaqSensorStatus())
       type_thp = 680;
     else {
-      iaqSensor.begin(BME680_I2C_ADDR_SECONDARY, Wire);
+      iaqSensor.begin(BME68X_I2C_ADDR_LOW, Wire);
       if (checkIaqSensorStatus())
         type_thp = 680;
     }
+  }
+
+  if (type_thp == 0) {
+    if (bme680.begin(BME68X_DEFAULT_ADDRESS))
+      type_thp = 679;
   }
 
   // BME680 initialization
@@ -122,6 +132,11 @@ bool read_thp_sensor(float *temperature, float *humidity, float *pressure, int *
     *humidity = bme280.readHumidity();
     *pressure = bme280.readPressure();
     *iaq = 0;
+    }  else if (type_thp == 679) {
+    *temperature = bme680.readTemperature();
+    *humidity = bme680.readHumidity();
+    *pressure = bme680.readPressure();
+    *iaq = bme680.readGas();
   } else if (type_thp == 680) {
     if (!iaqSensor.run())
       bsec_failcount++;
@@ -145,20 +160,20 @@ bool read_thp_sensor(float *temperature, float *humidity, float *pressure, int *
 }
 
 bool checkIaqSensorStatus(void) {
-  if (iaqSensor.status != BSEC_OK) {
-    if (iaqSensor.status < BSEC_OK)
-      log(INFO, "THP_Status: BSEC error - code %d", (int)iaqSensor.status);
+  if (iaqSensor.bsecStatus != BSEC_OK) {
+    if (iaqSensor.bsecStatus < BSEC_OK)
+      log(INFO, "THP_Status: BSEC error - code %d", (int)iaqSensor.bsecStatus);
     else
-      log(INFO, "THP_Status: BSEC warning - code %d", (int)iaqSensor.status);
+      log(INFO, "THP_Status: BSEC warning - code %d", (int)iaqSensor.bsecStatus);
     return false;
   }
 
-  if (iaqSensor.bme680Status != BME680_OK) {
-    if (iaqSensor.bme680Status < BME680_OK)
-      log(INFO, "THP_Status: BME680 error - code %d", (int)iaqSensor.status);
+  if (iaqSensor.bme68xStatus != BME68X_OK) {
+    if (iaqSensor.bme68xStatus < BME68X_OK)
+      log(INFO, "THP_Status: BME680 error - code %d", (int)iaqSensor.bme68xStatus);
     else
-      log(INFO, "THP_Status: BME680 warning - code %d", (int)iaqSensor.status);
-    Serial.println(iaqSensor.status);
+      log(INFO, "THP_Status: BME680 warning - code %d", (int)iaqSensor.bme68xStatus);
+    Serial.println(iaqSensor.bme68xStatus);
     return false;
   }
 

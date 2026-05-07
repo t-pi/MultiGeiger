@@ -362,7 +362,7 @@ void transmit_data_to_telegram(const char *tube_type, int tube_nbr, float tube_f
 
   char thp_text[60];
   bool telegram_ok;
-  char message[120];
+  char message[200];
 
   if (have_thp) {
     sprintf(thp_text, "\nBME data: %.1fC %.1f%% %.1fhPa", temperature, humidity, pressure/100);
@@ -372,14 +372,14 @@ void transmit_data_to_telegram(const char *tube_type, int tube_nbr, float tube_f
   set_status(STATUS_TELEGRAM, ST_TELEGRAM_SENDING);
   if (alarm_status) {
     if (tube_nbr > 0)
-      sprintf(message, "<b>--- MULTIGEIGER ALERT ! ---</b>\n<code>%s</code> rate too high:\n%.2f nSv/h (accumulated: %.2f nSv/h)", chipID.c_str(), cpm*tube_factor*1000/60, accu_rate*1000);
+      sprintf(message, "<b>--- MULTIGEIGER ALERT ! ---</b>\n%s\n<code>%s</code> rate too high:\n%.2f nSv/h (accumulated: %.2f nSv/h)", localDeviceName, chipID.c_str(), cpm*tube_factor*1000/60, accu_rate*1000);
     else
-      sprintf(message, "<b>--- MULTIGEIGER ALERT ! ---</b>\n<code>%s</code> rate too high:\n%d (accumulated: %d)", chipID.c_str(), cpm, accu_cpm);
+      sprintf(message, "<b>--- MULTIGEIGER ALERT ! ---</b>\n%s\n<code>%s</code> rate too high:\n%d (accumulated: %d)", localDeviceName, chipID.c_str(), cpm, accu_cpm);
   } else {
     if (tube_nbr > 0)
-      sprintf(message, "MultiGeiger <code>%s</code> rates:\n%.2f nSv/h (accumulated: %.2f nSv/h)%s", chipID.c_str(), cpm*tube_factor*1000/60, accu_rate*1000, have_thp ? thp_text : "");
+      sprintf(message, "%s\nMultiGeiger <code>%s</code> rates:\n%.2f nSv/h (accumulated: %.2f nSv/h)%s", localDeviceName, chipID.c_str(), cpm*tube_factor*1000/60, accu_rate*1000, have_thp ? thp_text : "");
     else
-      sprintf(message, "MultiGeiger <code>%s</code> CPM:\n%d (accumulated: %d)%s", chipID.c_str(), cpm, accu_cpm, have_thp ? thp_text : "");
+      sprintf(message, "%s\nMultiGeiger <code>%s</code> CPM:\n%d (accumulated: %d)%s", localDeviceName, chipID.c_str(), cpm, accu_cpm, have_thp ? thp_text : "");
   }
   telegram_ok = telegram_bot->sendMessage(telegramChatId, message, "HTML", 0);
   log(INFO, "Sent to Telegram messenger, status: %s", telegram_ok ? "ok" : "error");

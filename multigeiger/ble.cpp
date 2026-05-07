@@ -169,12 +169,14 @@ void setup_ble(char *device_name, bool ble_on) {
 
   bleServer->getAdvertising()->addServiceUUID(BLE_SERVICE_HEART_RATE);
   bleServer->getAdvertising()->addServiceUUID(BLE_SERVICE_ENVIRONMENTAL);
-  bleServer->getAdvertising()->setScanResponse(true);
-  bleServer->getAdvertising()->setMinPreferred(0x06);
-  bleServer->getAdvertising()->setMinPreferred(0x12);
+  bleServer->getAdvertising()->enableScanResponse(true);
+  bleServer->getAdvertising()->setPreferredParams(0x00, 0x00); // set preferred connection parameters to let central decide
+  bleServer->getAdvertising()->setName(device_name);
+  // bleServer->getAdvertising()->setMinPreferred(0x06);  // old values
+  // bleServer->getAdvertising()->setMinPreferred(0x12);  // BUG?? Supposed to have been setMaxPreferred?
 
-  bleHRService->start();
-  bleEnvService->start();
+  // bleHRService->start();  // warning: 'bool NimBLEService::start()' is deprecated: NimBLEService::start() has no effect. Services are started when the server is started.
+  // bleEnvService->start();
   bleServer->getAdvertising()->start();
 
   set_status(STATUS_BLE, ST_BLE_CONNECTABLE);

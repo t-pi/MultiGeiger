@@ -23,6 +23,8 @@ extern char appkey[];
 extern float localAlarmThreshold;
 extern int localAlarmFactor;
 
+extern char localDeviceName[33];
+
 extern long sendDataToMessengerEvery;
 extern char telegramBotToken[50];
 extern char telegramChatId[15];

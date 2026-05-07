@@ -40,6 +40,8 @@ static bool isLoraBoard;
 float localAlarmThreshold = LOCAL_ALARM_THRESHOLD;
 int localAlarmFactor = (int)LOCAL_ALARM_FACTOR;
 
+char localDeviceName[33] = "MultiGeiger Device";
+
 long sendDataToMessengerEvery = (long)SEND_DATA_TO_MESSENGER_EVERY;
 bool sendLocalAlarmToMessenger = SEND_LOCAL_ALARM_TO_MESSENGER;
 char telegramBotToken[50] = "";  // "XXXXXXXXXX:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
@@ -89,6 +91,11 @@ iotwebconf::IntTParameter<int16_t> localAlarmFactorParam =
   step(1).placeholder("2..100").build();
 
 iotwebconf::ParameterGroup grpMessenger = iotwebconf::ParameterGroup("messenger", "Messenger Settings");
+iotwebconf::TextTParameter<33> localDeviceNameParam =
+  iotwebconf::Builder<iotwebconf::TextTParameter<33>>("localDeviceName").
+  label("Name this specific device").
+  defaultValue(localDeviceName).
+  build();
 iotwebconf::IntTParameter<int32_t> sendDataToMessengerEveryParam =
   iotwebconf::Builder<iotwebconf::IntTParameter<int32_t>>("sendDataToMessengerEvery").
   label("Send data via Messenger every n sec\n(0=never,3600=1/h,86400=1/d,604800=1/week)").
@@ -221,6 +228,7 @@ void loadConfigVariables(void) {
   soundLocalAlarm = soundLocalAlarmParam.isChecked();
   localAlarmThreshold = localAlarmThresholdParam.value();
   localAlarmFactor = localAlarmFactorParam.value();
+  memcpy(localDeviceName, String(localDeviceNameParam.value()).c_str(), 33);
   sendDataToMessengerEvery = sendDataToMessengerEveryParam.value();
   sendLocalAlarmToMessenger = sendLocalAlarmToMessengerParam.isChecked();
   sendDataToMqttEvery = sendDataToMqttEveryParam.value();
@@ -283,6 +291,7 @@ void setup_webconf(bool loraHardware) {
   grpAlarm.addItem(&localAlarmFactorParam);
   iotWebConf.addParameterGroup(&grpAlarm);
 
+  grpMessenger.addItem(&localDeviceNameParam);
   grpMessenger.addItem(&sendDataToMessengerEveryParam);
   grpMessenger.addItem(&sendLocalAlarmToMessengerParam);
   grpMessenger.addItem(&telegramBotTokenParam);

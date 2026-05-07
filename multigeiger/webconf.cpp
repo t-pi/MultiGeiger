@@ -91,11 +91,6 @@ iotwebconf::IntTParameter<int16_t> localAlarmFactorParam =
   step(1).placeholder("2..100").build();
 
 iotwebconf::ParameterGroup grpMessenger = iotwebconf::ParameterGroup("messenger", "Messenger Settings");
-iotwebconf::TextTParameter<33> localDeviceNameParam =
-  iotwebconf::Builder<iotwebconf::TextTParameter<33>>("localDeviceName").
-  label("Name this specific device").
-  defaultValue(localDeviceName).
-  build();
 iotwebconf::IntTParameter<int32_t> sendDataToMessengerEveryParam =
   iotwebconf::Builder<iotwebconf::IntTParameter<int32_t>>("sendDataToMessengerEvery").
   label("Send data via Messenger every n sec\n(0=never,3600=1/h,86400=1/d,604800=1/week)").
@@ -136,6 +131,14 @@ iotwebconf::TextTParameter<50> mqttChannelPrefixParam =
   label("MQTT Channel prefix").
   defaultValue(mqttChannelPrefix).
   build();
+
+iotwebconf::ParameterGroup grpDevice = iotwebconf::ParameterGroup("device", "Generic Device Settings");
+iotwebconf::TextTParameter<33> localDeviceNameParam =
+  iotwebconf::Builder<iotwebconf::TextTParameter<33>>("localDeviceName").
+  label("Name this specific device").
+  defaultValue(localDeviceName).
+  build();
+
 
 // This only needs to be changed if the layout of the configuration is changed.
 // Appending new variables does not require a new version number here.
@@ -228,7 +231,6 @@ void loadConfigVariables(void) {
   soundLocalAlarm = soundLocalAlarmParam.isChecked();
   localAlarmThreshold = localAlarmThresholdParam.value();
   localAlarmFactor = localAlarmFactorParam.value();
-  memcpy(localDeviceName, String(localDeviceNameParam.value()).c_str(), 33);
   sendDataToMessengerEvery = sendDataToMessengerEveryParam.value();
   sendLocalAlarmToMessenger = sendLocalAlarmToMessengerParam.isChecked();
   sendDataToMqttEvery = sendDataToMqttEveryParam.value();
@@ -237,7 +239,7 @@ void loadConfigVariables(void) {
   mqttPort = mqttPortParam.value();
   memcpy(mqttUsername, String(mqttUsernameParam.value()).c_str(), 30);
   memcpy(mqttChannelPrefix, String(mqttChannelPrefixParam.value()).c_str(), 50);
-  sendLocalAlarmToMqtt = sendLocalAlarmToMqttParam.isChecked();
+  memcpy(localDeviceName, String(localDeviceNameParam.value()).c_str(), 33);
 
 }
 
@@ -291,7 +293,6 @@ void setup_webconf(bool loraHardware) {
   grpAlarm.addItem(&localAlarmFactorParam);
   iotWebConf.addParameterGroup(&grpAlarm);
 
-  grpMessenger.addItem(&localDeviceNameParam);
   grpMessenger.addItem(&sendDataToMessengerEveryParam);
   grpMessenger.addItem(&sendLocalAlarmToMessengerParam);
   grpMessenger.addItem(&telegramBotTokenParam);
@@ -306,6 +307,9 @@ void setup_webconf(bool loraHardware) {
   grpMqtt.addItem(&mqttPasswordParam);
   grpMqtt.addItem(&mqttChannelPrefixParam);
   iotWebConf.addParameterGroup(&grpMqtt);
+
+  grpDevice.addItem(&localDeviceNameParam);
+  iotWebConf.addParameterGroup(&grpDevice);
 
   // if we don't have LoRa hardware, do not send to LoRa
   if (!isLoraBoard)
